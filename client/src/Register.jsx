@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "./FrontendLayout/Layout";
 import { useForm } from "react-hook-form";
 
@@ -7,39 +7,70 @@ function Register() {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { isSubmitting },
   } = useForm();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+
+  const sendOTP = async () => {
+    const email = getValues("email");
+
+    if (!email) {
+      alert("Please enter your email first.");
+      return;
+    }
+
+
+    console.log("Send OTP to:", email);
+
+    // Example
+    // await axios.post("/api/send-otp", { email });
+    setOtpSent(true);
+  };
+
   const onSubmit = async (data) => {
+    if (!otpSent) {
+      alert("Please send the OTP first.");
+      return;
+    }
+
     console.log(data);
 
-    // Call your backend API here
     // await axios.post("/api/register", data);
 
+    alert("Account created successfully!");
     reset();
+    setOtpSent(false);
   };
 
   return (
     <Layout>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl border border-gray-200 p-8 lg:p-10">
-          <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+        <div className="w-full max-w-4xl rounded-2xl border border-gray-200 bg-white p-8 shadow-xl lg:p-10">
+          <h1 className="mb-8 text-center text-3xl font-bold text-gray-800">
             Create Account
           </h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             {/* Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="fullName"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   Full Name
                 </label>
+
                 <input
-                  type="text"
                   id="fullName"
+                  type="text"
                   placeholder="Enter your full name"
                   autoComplete="name"
                   {...register("fullName")}
@@ -50,13 +81,14 @@ function Register() {
               <div>
                 <label
                   htmlFor="username"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   Username
                 </label>
+
                 <input
-                  type="text"
                   id="username"
+                  type="text"
                   placeholder="Choose a username"
                   autoComplete="username"
                   {...register("username")}
@@ -66,17 +98,18 @@ function Register() {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="email"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   Email
                 </label>
+
                 <input
-                  type="email"
                   id="email"
+                  type="email"
                   placeholder="example@gmail.com"
                   autoComplete="email"
                   {...register("email")}
@@ -84,68 +117,150 @@ function Register() {
                 />
               </div>
 
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={sendOTP}
+                  className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Send OTP
+                </button>
+              </div>
+            </div>
+
+            {/* Row 3 */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="otp"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   OTP
                 </label>
+
                 <input
-                  type="text"
                   id="otp"
+                  type="text"
                   placeholder="Enter OTP"
                   {...register("otp")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
-            </div>
 
-            {/* Row 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
                   htmlFor="phone"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   Phone Number
                 </label>
+
                 <input
-                  type="tel"
                   id="phone"
+                  type="tel"
                   placeholder="98XXXXXXXX"
                   autoComplete="tel"
                   {...register("phone")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
+            </div>
 
+            {/* Password Row */}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="password"
-                  className="block mb-2 font-semibold text-gray-700"
+                  className="mb-2 block font-semibold text-gray-700"
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="********"
-                  autoComplete="new-password"
-                  {...register("password")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
+
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="********"
+                    autoComplete="new-password"
+                    {...register("password")}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-16 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-blue-600"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+                            <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-2 block font-semibold text-gray-700"
+                >
+                  Confirm Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="********"
+                    autoComplete="new-password"
+                    {...register("confirmPassword")}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 pr-16 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-blue-600"
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
             </div>
+
+           
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
+
+             <div className="flex items-center justify-center gap-2">
+              <p>or</p>
+            </div>
+
+             {/* oauth google login github login font awesome icons */}
+                      <div className="flex justify-center gap-4">
+                        <button
+                          type="button"
+                          aria-label="Continue with Google"
+                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
+                        >
+                         <img src="/google.png" alt="Google" className="w-5 h-5" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Continue with GitHub"
+                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
+                        >
+                       <img src="/github.png" alt="GitHub" className="w-5 h-5"/>
+                        </button>
+                      </div>
+                      
           </form>
         </div>
       </div>
