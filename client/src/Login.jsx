@@ -41,17 +41,16 @@ function Login() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-6"
           >
-            {/* Email */}
+            {/* username */}
             <div>
               <label className="block mb-2 font-semibold text-gray-700">
-                Email
+                UserName
               </label>
 
               <input
-                type="email"
+                type="text"
                 placeholder="example@gmail.com"
-                autoComplete="email"
-                {...register("email")}
+                {...register("username")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
             </div>
