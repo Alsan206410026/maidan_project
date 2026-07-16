@@ -117,37 +117,7 @@ function Register() {
                 />
               </div>
 
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={sendOTP}
-                  className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700"
-                >
-                  Send OTP
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3 */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="otp"
-                  className="mb-2 block font-semibold text-gray-700"
-                >
-                  OTP
-                </label>
-
-                <input
-                  id="otp"
-                  type="text"
-                  placeholder="Enter OTP"
-                  {...register("otp")}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-
-              <div>
+                <div>
                 <label
                   htmlFor="phone"
                   className="mb-2 block font-semibold text-gray-700"
@@ -164,7 +134,10 @@ function Register() {
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
+
+             
             </div>
+
 
             {/* Password Row */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
