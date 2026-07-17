@@ -70,9 +70,9 @@ const registerUser = async (req, res) => {
             });
         }
 
-       
+
         // TODO: verify OTP
-      
+
 
         const user = await User.create({
             fullName,
@@ -90,15 +90,17 @@ const registerUser = async (req, res) => {
             const otpExpires = new Date();
             otpExpires.setMinutes(otpExpires.getMinutes() + 10);
 
-            // Message
-            const message = `
-                        Welcome to our platform Maidan ${fullName}! Your registration was successful.
-                        Your OTP for registration is: ${OTP}. It will expire in 10 minutes.
-                        `;
+          const message = 
+`Welcome to our platform ${fullName}!
+
+Your registration was successful.
+
+Your OTP for registration is: ${OTP}. It will expire in 10 minutes.`;
 
             // Send email  // TODO: SEND OTP   // TODO: Send welcome email
-            await sendEmail(email, "Welcome to our platform Maidan", message);
+            await sendEmail(email, "Welcome to our platform", message);
 
+            //after register 
             return res.status(201).json({
                 _id: user._id,
                 fullName: user.fullName,
@@ -108,6 +110,7 @@ const registerUser = async (req, res) => {
                 role: user.role,
                 token: generateToken(user._id),
             });
+
         } else {
             return res.status(400).json({
                 message: "Invalid user data",
@@ -123,7 +126,44 @@ const registerUser = async (req, res) => {
 };
 
 // Login user
-const loginUser = async (req, res) => {}
+const loginUser = async (req, res) => {
+    const { username, password } = req.body;
 
+    try {
+        const user = await User.findOne({ username });
+        if (user && (await bcrypt.compare(password, user.password))) {
+            return res.status(200).json({
+                _id: user._id,
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                role: user.role,
+                token: generateToken(user._id),
+            });
+        } else {
+            return res.status(401).json({
+                message: "Invalid username or password",
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
 
-module.exports = { registerUser, loginUser };
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.find().select("-password"); // Exclude password field
+        return res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
+
+module.exports = { registerUser, loginUser, getUsers };

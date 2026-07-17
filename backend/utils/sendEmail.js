@@ -21,3 +21,5 @@ const sendEmail = async (to, subject, text) => {
     throw new Error("Failed to send email");
 }
 };
+
+module.exports = sendEmail;

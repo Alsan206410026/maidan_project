@@ -17,6 +17,12 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/authRoutes.js'));
+app.use('/api/venue', require('./routes/venueRoutes.js'));
+// app.use('/api/booking', require('./routes/bookingRoutes.js'));
+// app.use('/api/payment', require('./routes/paymentRoutes.js'));
+// app.use('/api/admin', require('./routes/adminRoutes.js'));
+// app.use('/api/chat', require('./routes/chatRoutes.js'));
+// app.use('/api/notification', require('./routes/notificationRoutes.js'));
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

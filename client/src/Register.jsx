@@ -15,25 +15,11 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
-  const sendOTP = async () => {
+  const onSubmit = async (data) => {
     const email = getValues("email");
 
     if (!email) {
       alert("Please enter your email first.");
-      return;
-    }
-
-
-    console.log("Send OTP to:", email);
-
-    // Example
-    // await axios.post("/api/send-otp", { email });
-    setOtpSent(true);
-  };
-
-  const onSubmit = async (data) => {
-    if (!otpSent) {
-      alert("Please send the OTP first.");
       return;
     }
 
