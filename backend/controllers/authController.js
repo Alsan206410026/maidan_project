@@ -107,7 +107,6 @@ Your OTP for registration is: ${OTP}. It will expire in 10 minutes.`;
                 username: user.username,
                 email: user.email,
                 phoneNumber: user.phoneNumber,
-                role: user.role,
                 token: generateToken(user._id),
             });
 
@@ -138,7 +137,6 @@ const loginUser = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 phoneNumber: user.phoneNumber,
-                role: user.role,
                 token: generateToken(user._id),
             });
         } else {

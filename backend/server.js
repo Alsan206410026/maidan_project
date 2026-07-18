@@ -24,7 +24,7 @@ app.use('/api/venue', require('./routes/venueRoutes.js'));
 // app.use('/api/chat', require('./routes/chatRoutes.js'));
 // app.use('/api/notification', require('./routes/notificationRoutes.js'));
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

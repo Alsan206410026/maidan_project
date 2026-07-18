@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Category = require("./VenueCategory.js");
 const venueSchema = new mongoose.Schema({
    name:{
         type:String,
@@ -25,14 +24,10 @@ const venueSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    stockQuantity:{
-        type:Number,
-        required:true
-    },
     status:{
         type:String,
-        enum:["active", "inactive"],
-        default:"inactive"
+        enum:["Open","Closed"],
+        required:true
     },
     images:{
         type:String,
