@@ -1,4 +1,5 @@
 const Venue = require("../model/Venue.js");
+const cloudinary = require("../config/cloudinary.js");
 
 // Get all venues
 const getVenues = async (req, res) => {
@@ -15,8 +16,15 @@ const getVenues = async (req, res) => {
 
 // Create a new venue
 const createVenue = async (req, res) => {
-    const { name, slug, description, category, price, stockQuantity, status, images } = req.body;
+    const { name, slug, description, category, price, status } = req.body;
 
+    let imageUrl = ''
+
+    if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            imageUrl = result.secure_url; // when you upload image to cloudinary, it will return a secure_url which is the URL of the uploaded image
+        }
+            
     try {
         const newVenue = await Venue.create({
             name,
@@ -24,9 +32,8 @@ const createVenue = async (req, res) => {
             description,
             category,
             price,
-            stockQuantity,
             status,
-            images
+            images: imageUrl, // Save the image URL in the database
         });
 
         return res.status(201).json(newVenue);

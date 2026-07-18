@@ -3,9 +3,10 @@ const router = express.Router();
 const {getVenues, createVenue} = require("../controllers/venueController.js");
 const { protect } = require("../middleware/authmiddleware.js");
 const { admin } = require("../middleware/adminMiddleware.js");
+const  upload  = require("../middleware/venuemiddleware.js");
 
 
-router.route("/").get(getVenues).post(protect, admin, createVenue);
+router.route("/").get(getVenues).post(protect, admin, upload.single("image"), createVenue);
 // router.route("/:id").get(getVenueById).put(protect, admin, updateVenue).delete(protect, admin, deleteVenue);
 
 
