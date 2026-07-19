@@ -142,10 +142,7 @@ function Venue() {
             {/* Venue Cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
               {currentVenues.map((venue) => (
-                <div
-                  key={venue._id}
-                  className="overflow-hidden rounded-xl border bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md sm:p-5"
-                >
+                <div key={venue._id} className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-2 hover:scale-[1.02] hover:border-green-500 hover:shadow-xl">
                   <img
                     src={venue.images}
                     alt={venue.name}
@@ -186,11 +183,10 @@ function Venue() {
                 <button
                   key={number}
                   onClick={() => handlePageChange(number)}
-                  className={`min-w-8 rounded px-2 py-1.5 text-xs leading-none transition sm:min-w-10 sm:px-3 sm:py-2 sm:text-sm ${
-                    page === number
+                  className={`min-w-8 rounded px-2 py-1.5 text-xs leading-none transition sm:min-w-10 sm:px-3 sm:py-2 sm:text-sm ${page === number
                       ? "bg-green-600 text-white"
                       : "border border-gray-300 bg-white"
-                  }`}
+                    }`}
                 >
                   {number}
                 </button>
@@ -203,11 +199,10 @@ function Venue() {
 
                   <button
                     onClick={() => handlePageChange(totalPages)}
-                    className={`min-w-8 rounded px-2 py-1.5 text-xs leading-none transition sm:min-w-10 sm:px-3 sm:py-2 sm:text-sm ${
-                      page === totalPages
+                    className={`min-w-8 rounded px-2 py-1.5 text-xs leading-none transition sm:min-w-10 sm:px-3 sm:py-2 sm:text-sm ${page === totalPages
                         ? "bg-green-600 text-white"
                         : "border border-gray-300 bg-white"
-                    }`}
+                      }`}
                   >
                     {totalPages}
                   </button>
