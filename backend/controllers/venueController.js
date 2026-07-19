@@ -75,7 +75,7 @@ const SearchVenues = async (req, res) => {
 
 // Create a new venue
 const createVenue = async (req, res) => {
-    const { name, slug, description, category, price, status, location } = req.body;
+    const { name, slug, description, category, price, status, location, admin } = req.body;
 
 
     let imageUrl = ''
@@ -85,7 +85,7 @@ const createVenue = async (req, res) => {
             imageUrl = result.secure_url; // when you upload image to cloudinary, it will return a secure_url which is the URL of the uploaded image
         }
 
-        if(!name || !slug || !description || !category || !price || !status || !location || !imageUrl){
+        if(!name || !slug || !description || !category || !price || !status || !location || !imageUrl || !admin){
             return res.status(400).json({
                 message: "Please fill all the fields",
             });
@@ -100,7 +100,8 @@ const createVenue = async (req, res) => {
             price,
             status,
             images: imageUrl, // Save the image URL in the database
-            location
+            location,
+            admin
         });
 
         return res.status(201).json(newVenue);
@@ -115,7 +116,7 @@ const createVenue = async (req, res) => {
 
 // Update a venue
 const updateVenue = async (req, res) => {
-    const { name, slug, description, category, price, status, location } = req.body;
+    const { name, slug, description, category, price, status, location, admin } = req.body;
     const venue = await Venue.findById(req.params.id);
     if(venue){
         venue.name = name || venue.name;
@@ -125,6 +126,7 @@ const updateVenue = async (req, res) => {
         venue.price = price || venue.price;
         venue.status = status || venue.status;
         venue.location = location || venue.location;
+        venue.admin = admin || venue.admin; // Update the admin to the provided value if given
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             venue.images = result.secure_url; // Update the image URL in the database

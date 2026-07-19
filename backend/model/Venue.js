@@ -38,6 +38,11 @@ const venueSchema = new mongoose.Schema({
     location:{
         type:String,
         required:true
+    },
+    admin:{
+        type:mongoose.Types.ObjectId,
+        ref:"User",
+        required:true
     }
     
 }, {
