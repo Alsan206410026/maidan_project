@@ -29,7 +29,13 @@ const venueSchema = new mongoose.Schema({
         enum:["Open","Closed"],
         required:true
     },
+    
     images:{
+        type:String,
+        required:true
+    },
+    
+    location:{
         type:String,
         required:true
     }
