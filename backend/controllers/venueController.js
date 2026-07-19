@@ -1,17 +1,18 @@
 const Venue = require("../model/Venue.js");
+const Category = require("../model/VenueCategory.js");
 const cloudinary = require("../config/cloudinary.js");
 
 // Get all venues
 const getVenues = async (req, res) => {
-    try {
-        const venues = await Venue.find();
-        return res.status(200).json(venues);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            message: "Internal Server Error",
-        });
-    }
+  try {
+    const venues = await Venue.find().populate("category", "name slug");
+
+    return res.status(200).json(venues);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 
 // Get a venue by ID 
@@ -33,37 +34,61 @@ const getVenueById = async (req, res) => {
     }
 };
 
+
 //Search Venues by name or category or price or location
 const SearchVenues = async (req, res) => {
-    const { query } = req.query;
-    try {
-        const venues = await Venue.find({
-            $or: [
-                { name: { $regex: query, $options: "i" } },
-                { category: { $regex: query, $options: "i" } },
-                { price: { $regex: query, $options: "i" } },
-                { location: { $regex: query, $options: "i" } }
-            ]
-        });
-        return res.status(200).json(venues);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            message: "Internal Server Error",
-        });
-    }
-};
+  const location = req.query.location?.trim();
+  const sport = req.query.sport?.trim();
 
+  try {
+    const filter = {};
+
+    // Location only: return every category in that location
+    if (location) {
+      filter.location = {
+        $regex: location,
+        $options: "i",
+      };
+    }
+
+    // Sport only: return that sport in every location
+    if (sport) {
+      const categoryIds = await Category.find({
+        name: { $regex: sport, $options: "i" },
+      }).distinct("_id");
+
+      filter.category = {
+        $in: categoryIds,
+      };
+    }
+
+    const venues = await Venue.find(filter).populate("category", "name slug");
+
+    return res.status(200).json(venues);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
 
 // Create a new venue
 const createVenue = async (req, res) => {
-    const { name, slug, description, category, price, status } = req.body;
+    const { name, slug, description, category, price, status, location } = req.body;
+
 
     let imageUrl = ''
 
     if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             imageUrl = result.secure_url; // when you upload image to cloudinary, it will return a secure_url which is the URL of the uploaded image
+        }
+
+        if(!name || !slug || !description || !category || !price || !status || !location || !imageUrl){
+            return res.status(400).json({
+                message: "Please fill all the fields",
+            });
         }
             
     try {
@@ -75,6 +100,7 @@ const createVenue = async (req, res) => {
             price,
             status,
             images: imageUrl, // Save the image URL in the database
+            location
         });
 
         return res.status(201).json(newVenue);
@@ -89,7 +115,7 @@ const createVenue = async (req, res) => {
 
 // Update a venue
 const updateVenue = async (req, res) => {
-    const { name, slug, description, category, price, status } = req.body;
+    const { name, slug, description, category, price, status, location } = req.body;
     const venue = await Venue.findById(req.params.id);
     if(venue){
         venue.name = name || venue.name;
@@ -98,6 +124,7 @@ const updateVenue = async (req, res) => {
         venue.category = category || venue.category;
         venue.price = price || venue.price;
         venue.status = status || venue.status;
+        venue.location = location || venue.location;
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             venue.images = result.secure_url; // Update the image URL in the database
