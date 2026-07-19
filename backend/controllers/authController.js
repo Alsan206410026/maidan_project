@@ -247,7 +247,19 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Check password
+        if(user.status === "blocked") {
+            return res.status(403).json({
+                message: "Your account has been blocked. Please contact support.",
+            });
+        }
+        if (user.status === "suspended") {
+            return res.status(403).json({
+                message: "Your account has been suspended. Please contact support.",
+            });
+        }
+
+        if (user.status === "active") {
+             // Check password
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -264,6 +276,15 @@ const loginUser = async (req, res) => {
             phoneNumber: user.phoneNumber,
             token: generateToken(user._id),
         });
+        
+        }
+        else {
+            return res.status(403).json({
+                message: "Your account is not active. Please contact support.",
+            });
+        }
+
+       
 
     } catch (error) {
 
