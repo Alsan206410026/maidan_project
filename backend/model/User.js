@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
     },
     username: {
         type: String,
-        required: true,
         unique: true,
     },
     email: {
@@ -16,19 +15,17 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
     },
-
     phoneNumber: {
         type: String,
-        required: true,
+       
     },
     password: {
         type: String,
-        required: true,
         minlength: 6,
     },
     role: {
         type: String,
-        enum: ['user', 'admin' , 'super_admin'],
+        enum: ['user', 'admin', 'super_admin'],
         default: 'user'
     },
     status: {
@@ -43,6 +40,14 @@ const userSchema = new mongoose.Schema({
     verified: {
         type: Boolean,
         default: false,
+    },
+    otp: {
+        type: String,
+        default: null,
+    },
+    otpExpires: {
+        type: Number,
+        default: null,
     }
 
 });

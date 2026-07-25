@@ -46,7 +46,7 @@ const SearchVenues = async (req, res) => {
     // Location only: return every category in that location
     if (location) {
       filter.location = {
-        $regex: location,
+        $regex: location, //regex do like if user search loc it will return all location which  contains loc in it.
         $options: "i",
       };
     }
@@ -80,6 +80,10 @@ const createVenue = async (req, res) => {
 
     let imageUrl = ''
 
+            
+    try {
+
+        
     if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             imageUrl = result.secure_url; // when you upload image to cloudinary, it will return a secure_url which is the URL of the uploaded image
@@ -90,8 +94,8 @@ const createVenue = async (req, res) => {
                 message: "Please fill all the fields",
             });
         }
-            
-    try {
+
+        
         const newVenue = await Venue.create({
             name,
             slug,
