@@ -41,16 +41,16 @@ function Login() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-6"
           >
-            {/* username */}
+            {/* email */}
             <div>
               <label className="block mb-2 font-semibold text-gray-700">
-                UserName
+                Email
               </label>
 
               <input
                 type="text"
                 placeholder="example@gmail.com"
-                {...register("username")}
+                {...register("email")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
             </div>
@@ -108,28 +108,26 @@ function Login() {
               {isSubmitting ? "Logging In..." : "Login"}
             </button>
             {/* oauth */}
-           <div>
-            <p className="flex items-center justify-center gap-2">or continue with</p>
-           {/* oauth google login github login font awesome icons */}
-                      <div className="flex justify-center gap-4">
-                        <button
-                          type="button"
-                          aria-label="Continue with Google"
-                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
-                        >
-                         <img src="/google.png" alt="Google" className="w-5 h-5" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Continue with GitHub"
-                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
-                        >
-                       <img src="/github.png" alt="GitHub" className="w-5 h-5"/>
-                        </button>
-                      </div>
-          
+            <div>
+              <p className="flex items-center justify-center gap-2 mb-2">or </p>
 
-           </div>
+              {/* oauth google login */}
+
+              <div className="flex justify-center gap-4" onClick={() => window.open("http://localhost:5001/api/auth/google", "_self")}>
+                <button
+                  type="button"
+                  aria-label="Continue with Google"
+                  className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5 w-full"
+                >
+                  <div className="flex items-center gap-6">
+                    <div><img src="/google.png" alt="Google" className="w-5 h-5" /></div>
+                    <div><p>Continue with Google</p></div>
+                  </div>
+                </button>
+
+              </div>
+
+            </div>
           </form>
         </div>
       </div>

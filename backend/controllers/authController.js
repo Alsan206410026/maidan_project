@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail.js");
+const passport = require("passport");
 
 // Generate JWT
 const generateToken = (id) => {
@@ -27,11 +28,16 @@ const registerUser = async (req, res) => {
     } = req.body;
 
     try {
-
+        if (!fullName || !username || !email || !phoneNumber || !password || !confirmPassword) {
+            return res.status(400).json({
+                message: "Please fill in all fields",
+            });
+        }
         // Check email
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
+            console.log("User already exists");
             return res.status(400).json({
                 message: "User already exists",
             });
@@ -78,7 +84,7 @@ const registerUser = async (req, res) => {
         if (!passwordRegex.test(password)) {
             return res.status(400).json({
                 message:
-                    "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character.",
+"Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character.",
             });
         }
 
@@ -100,6 +106,7 @@ const registerUser = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
         };
+        console.log("User data stored in session:", req.session.userData);
 
         req.session.otp = otp;
         req.session.otpExpires = otpExpires;
@@ -201,7 +208,7 @@ const verifyOtp = async (req, res) => {
 
         // Destroy session after successful registration
         req.session.destroy((err) => {
-            if (err) {
+            if (err) { 
                 console.log(err);
             }
         });
@@ -227,20 +234,23 @@ const verifyOtp = async (req, res) => {
 
     }
 };
+
 // login user
 const loginUser = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     try {
 
-        // Check username
-        const user = await User.findOne({ username });
+
+        // Check email
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(401).json({
-                message: "Invalid username or password",
+                message: "Invalid email or password",
             });
         }
+        
         if (!user.verified) {
             return res.status(401).json({
                 message: "Please verify your email before logging in.",
@@ -264,7 +274,7 @@ const loginUser = async (req, res) => {
 
         if (!isMatch) {
             return res.status(401).json({
-                message: "Invalid username or password",
+                message: "Invalid email  or password",
             });
         }
 
@@ -297,6 +307,119 @@ const loginUser = async (req, res) => {
     }
 };
 
+// forgot password
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Check if user exists
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        // Generate OTP
+        const otp = crypto.randomInt(100000, 1000000).toString();
+
+        // OTP expires after 10 minutes
+        const otpExpires = Date.now() + 10 * 60 * 1000;
+
+            //hash the otp before saving to database
+        const salt = await bcrypt.genSalt(10);
+        const hashedOtp = await bcrypt.hash(otp, salt);
+
+        // Save OTP and expiry to user
+        user.otp = hashedOtp;
+        user.otpExpires = otpExpires;
+        await user.save();
+
+        // Send email with OTP
+        await sendEmail(
+            user.email,
+            "Password Reset OTP",
+            `Your OTP for password reset is: ${otp}`
+        );
+
+        return res.status(200).json({
+            message: "OTP sent to your email",
+            consoleLog: `OTP for ${email}: ${otp}`, // For testing purposes, log the OTP to the console
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
+
+
+//reset password
+const resetPassword = async (req, res) => {
+    const { otp, email, newPassword } = req.body;
+    try {
+        if (!otp || !email || !newPassword) {
+            return res.status(400).json({
+                message: "OTP, email, and new password are required",
+            });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        if (!user.otpExpires || user.otpExpires < Date.now()) {
+            return res.status(400).json({
+                message: "OTP expired",
+            });
+        }
+
+        // Check if hashed OTP in database matches the provided OTP
+        const isMatch = await bcrypt.compare(otp, user.otp);
+        if (!isMatch) {
+            return res.status(400).json({
+                message: "Invalid OTP",
+            });
+        }
+
+        // Validate new password
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!passwordRegex.test(newPassword)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
+            });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password
+        user.password = hashedPassword;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        return res.status(200).json({
+            message: "Password reset successful",
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
+
+
 // get all users (for super admin)
 const getUsers = async (req, res) => {
 
@@ -318,9 +441,36 @@ const getUsers = async (req, res) => {
 
 };
 
+//oauth authenticate
+//const authenticate = passport.authenticate("google", { scope: ["profile", "email"] });
+
+//oauth callback
+// const oauthCallback = 
+//     passport.authenticate("google", {
+//         failureRedirect: "http://localhost:5173/login",
+//         session: false,
+//     }),
+//     (req, res) => {
+
+//         const token = jwt.sign(
+//             { id: req.user._id },
+//             process.env.JWT_SECRET,
+//             {
+//                 expiresIn: "20d",
+//             }
+//         );
+
+//         res.redirect(
+//             `http://localhost:5173/google-success?token=${token}`
+//         );
+//     }
+
 module.exports = {
     registerUser,
     verifyOtp,
     loginUser,
     getUsers,
+    verifyOtp,
+    forgotPassword,
+    resetPassword,
 };

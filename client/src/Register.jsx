@@ -103,7 +103,7 @@ function Register() {
                 />
               </div>
 
-                <div>
+              <div>
                 <label
                   htmlFor="phone"
                   className="mb-2 block font-semibold text-gray-700"
@@ -121,7 +121,7 @@ function Register() {
                 />
               </div>
 
-             
+
             </div>
 
 
@@ -156,7 +156,7 @@ function Register() {
                   </button>
                 </div>
               </div>
-                            <div>
+              <div>
                 <label
                   htmlFor="confirmPassword"
                   className="mb-2 block font-semibold text-gray-700"
@@ -187,7 +187,7 @@ function Register() {
               </div>
             </div>
 
-           
+
 
             {/* Submit Button */}
             <button
@@ -198,28 +198,25 @@ function Register() {
               {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
 
-             <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <p>or</p>
             </div>
 
-             {/* oauth google login github login font awesome icons */}
-                      <div className="flex justify-center gap-4">
-                        <button
-                          type="button"
-                          aria-label="Continue with Google"
-                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
-                        >
-                         <img src="/google.png" alt="Google" className="w-5 h-5" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Continue with GitHub"
-                          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5"
-                        >
-                       <img src="/github.png" alt="GitHub" className="w-5 h-5"/>
-                        </button>
-                      </div>
-                      
+            {/* oauth google registration */}
+            <div className="flex justify-center gap-4 " onClick={() => window.open("http://localhost:5001/auth/google", "_self")}>
+              <button
+                type="button"
+                aria-label="Continue with Google"
+                className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5 w-full"
+              >
+                <div className="flex items-center gap-6">
+                  <div><img src="/google.png" alt="Google" className="w-5 h-5" /></div>
+                  <div><p>Continue with Google</p></div>
+                </div>
+              </button>
+
+            </div>
+
           </form>
         </div>
       </div>

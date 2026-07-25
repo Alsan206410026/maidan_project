@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Layout from "../FrontendLayout/Layout";
 
@@ -23,8 +23,6 @@ function Venue() {
 
   // Total pages
   const totalPages = Math.ceil(venues.length / venuesPerPage);
-
-  //scroll to top on page change
 
 
   useEffect(() => {
@@ -83,8 +81,13 @@ function Venue() {
 
   const handlePageChange = (nextPage) => {
     setPage(nextPage);
+    //scroll to top on page change
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+
+
+
 
   useEffect(() => {
     fetchVenues();
@@ -142,7 +145,11 @@ function Venue() {
             {/* Venue Cards */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
               {currentVenues.map((venue) => (
-                <div key={venue._id} className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-2 hover:scale-[1.02] hover:border-green-500 hover:shadow-xl">
+                <Link
+                  key={venue._id}
+                  to={`/venues/${venue._id}`}
+                  className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-2 hover:scale-[1.02] hover:border-green-500 hover:shadow-xl"
+                >
                   <img
                     src={venue.images}
                     alt={venue.name}
@@ -162,7 +169,7 @@ function Venue() {
                   <p className="mt-1 text-sm text-gray-600 sm:text-base">
                     {venue.category?.name}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
 

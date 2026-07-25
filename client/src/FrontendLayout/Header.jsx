@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
+import MaidanLogo from "../assets/Maidan_logo.png";
 
 function Header() {
   const navClass = ({ isActive }) =>
@@ -18,9 +19,9 @@ function Header() {
             {/* Logo */}
             <NavLink to="/" className="flex items-center gap-2.5 cursor-pointer">
               <img
-                src="/Maidan_logo.png"
+                src={MaidanLogo}
                 alt="Maidan Logo"
-                className="w-16 h-16"
+                className="w-16 h-16 rounded-full object-cover"
               />
             </NavLink>
 
