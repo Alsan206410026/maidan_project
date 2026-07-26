@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Layout from "../FrontendLayout/Layout";
@@ -14,6 +14,7 @@ function Venue() {
   const [loading, setLoading] = useState(true);
   const [pagesToShow, setPagesToShow] = useState(3);
   const [venuesPerPage, setVenuesPerPage] = useState(4);
+  const sectionRef = useRef(null);
 
   // Calculate current page venues
   const lastVenue = page * venuesPerPage;
@@ -80,10 +81,17 @@ function Venue() {
   }
 
   const handlePageChange = (nextPage) => {
-    setPage(nextPage);
-    //scroll to top on page change
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (totalPages === 0) return;
+
+    const safePage = Math.max(1, Math.min(nextPage, totalPages));
+    if (safePage === page) return;
+
+    setPage(safePage);
   };
+
+  useEffect(() => {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [page]);
 
 
 
@@ -129,7 +137,7 @@ function Venue() {
   };
   return (
     <Layout>
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <section ref={sectionRef} className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <h1 className="mb-6 text-2xl font-bold leading-tight sm:text-3xl">
           {location || sport
             ? `Search: ${location || sport}`
@@ -182,7 +190,7 @@ function Venue() {
                 disabled={page === 1}
                 className="min-w-8 rounded border border-gray-300 px-2 py-1.5 text-xs leading-none transition disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-10 sm:px-3 sm:py-2 sm:text-sm"
               >
-                &lt;
+                {"<"}
               </button>
 
               {/* Page Numbers */}
