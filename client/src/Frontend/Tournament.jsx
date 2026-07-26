@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Layout from "../FrontendLayout/Layout";
 import { Link } from "react-router-dom";
@@ -10,6 +10,7 @@ function Tournament() {
   const [loading, setLoading] = useState(true);
   const [pagesToShow, setPagesToShow] = useState(3);
   const [tournamentsPerPage, setTournamentsPerPage] = useState(4);
+  const sectionRef = useRef(null);
 
   const lastTournament = page * tournamentsPerPage;
   const firstTournament = lastTournament - tournamentsPerPage;
@@ -90,9 +91,17 @@ function Tournament() {
   }
 
   const handlePageChange = (nextPage) => {
-    setPage(nextPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (totalPages === 0) return;
+
+    const safePage = Math.max(1, Math.min(nextPage, totalPages));
+    if (safePage === page) return;
+
+    setPage(safePage);
   };
+
+  useEffect(() => {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [page]);
 
   const formatDate = (value) => {
     if (!value) return "N/A";
@@ -105,7 +114,7 @@ function Tournament() {
 
   return (
     <Layout>
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <section ref={sectionRef} className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div>
             <h1 className="text-2xl font-bold leading-tight sm:text-3xl">
@@ -141,7 +150,7 @@ function Tournament() {
                   <img
                     src={tournament.images}
                     alt={tournament.name}
-                    className="aspect-[16/10] w-full rounded-lg object-cover sm:aspect-[4/3]"
+                    className="aspect-16/10 w-full rounded-lg object-cover sm:aspect-4/3"
                   />
 
                   <div className="mt-3 flex items-start justify-between gap-2">
