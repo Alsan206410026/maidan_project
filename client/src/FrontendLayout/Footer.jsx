@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import Maidan_logo from "../assets/Maidan_logo.png";
 
 function Footer() {
   return (
@@ -12,7 +12,7 @@ function Footer() {
           <div>
             <div className="flex items-center gap-2.5 mb-4">
               <img
-                src="/Maidan_logo.png"
+                src={Maidan_logo}
                 alt="Maidan Logo"
                 className="w-16 h-16"
               />

@@ -11,6 +11,11 @@ import VenueDetails from "./Frontend/VenueDetails";
 import UserDashboard from "./Backend/UserDashboard";
 import AdminDashboard from "./Backend/AdminDashboard";
 import SuperAdminDashboard from "./Backend/SuperAdminDashboard";
+import SuperAdminSidebar from "./Backend/SuperAdminSidebar";
+import SuperAdminManageUser from "./Backend/SuperAdminManageUser";
+import SuperAdminManageVenue from "./Backend/SuperAdminManageVenue";
+import SuperAdminManageTournament from "./Backend/SuperAdminManageTournament";
+import SuperAdminChat from "./Backend/SuperAdminChat";
 
 function App() {
   return (
@@ -26,7 +31,34 @@ function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+      <Route element={<SuperAdminSidebar />}>
+      
+        <Route
+          path="/super-admin-dashboard"
+          element={<SuperAdminDashboard />} />
+        
+
+        <Route
+          path="/super-admin/users"
+          element={<SuperAdminManageUser />} />
+        
+
+        <Route
+          path="/super-admin/venues"
+          element={<SuperAdminManageVenue />} />
+        
+          <Route
+          path="/super-admin/tournaments"
+          element={<SuperAdminManageTournament />} />
+
+            
+          <Route
+          path="/super-admin/chat"
+          element={<SuperAdminChat />} />
+        
+        
+
+      </Route>
     </Routes>
   );
 }
