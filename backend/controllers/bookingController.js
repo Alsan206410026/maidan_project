@@ -3,12 +3,14 @@ const Venue = require("../model/Venue.js");
 const TimeSlot = require("../model/TimeSlot.js");
 const sendEmail = require("../utils/sendEmail.js");
 const Notification = require("../model/Notification.js");
+const sendNotification = require("../websocket/notificationHandler");
 
 // Get all bookings
 const getAllBookings = async (req, res) => {
     try {
 
         if (req.user.role === "super_admin") {
+
             const bookings = await Booking.find()
                 .populate("user", "fullName email phoneNumber")
                 .populate("venue", "name location")
@@ -34,6 +36,7 @@ const getAllBookings = async (req, res) => {
                 .populate("slot");
 
             return res.status(200).json(bookings);
+
         }
 
         const bookings = await Booking.find({
@@ -45,9 +48,11 @@ const getAllBookings = async (req, res) => {
         return res.status(200).json(bookings);
 
     } catch (error) {
+
         return res.status(500).json({
             message: "Internal Server Error",
         });
+
     }
 };
 
@@ -70,6 +75,7 @@ const getBookingById = async (req, res) => {
         if (req.user.role === "super_admin") {
             return res.status(200).json(booking);
         }
+
         const venue = await Venue.findById(booking.venue);
 
         if (
@@ -82,17 +88,19 @@ const getBookingById = async (req, res) => {
         if (booking.user._id.toString() === req.user._id.toString()) {
             return res.status(200).json(booking);
         }
-        else {
-            return res.status(403).json({
-                message: "Unauthorized"
-            });
-        }
+
+        return res.status(403).json({
+            message: "Unauthorized"
+        });
 
     } catch (error) {
+
         return res.status(500).json({
             message: "Internal Server Error",
         });
+
     }
+
 };
 
 // Search bookings
@@ -118,6 +126,7 @@ const searchBookings = async (req, res) => {
             filter.venue = {
                 $in: venueIds,
             };
+
         }
 
         if (bookingStatus) {
@@ -136,12 +145,14 @@ const searchBookings = async (req, res) => {
         return res.status(200).json(bookings);
 
     } catch (error) {
+
         return res.status(500).json({
             message: "Internal Server Error",
         });
-    }
-};
 
+    }
+
+};
 // Create booking
 const createBooking = async (req, res) => {
 
@@ -202,7 +213,9 @@ const createBooking = async (req, res) => {
 
         });
 
+        // Create notification in database
         const notification = await Notification.create({
+
             sender: req.user._id,
             receiver: venueData.admin,
             venue: venueData._id,
@@ -210,8 +223,10 @@ const createBooking = async (req, res) => {
             title: "New Booking",
             message: `${req.user.fullName} booked ${venueData.name} on ${bookingDate}.`,
             type: "Booking"
+
         });
 
+        // Send email (optional)
         try {
 
             await sendEmail(
@@ -238,6 +253,9 @@ Thank you for choosing Maidan.`
 
         }
 
+        // Send real-time notification
+        sendNotification(notification);
+
         return res.status(201).json(booking);
 
     } catch (error) {
@@ -249,57 +267,61 @@ Thank you for choosing Maidan.`
     }
 
 };
-
 // Update booking
 const updateBooking = async (req, res) => {
 
-    const booking = await Booking.findById(req.params.id);
-
-    if (!booking) {
-        return res.status(404).json({
-            message: "Booking not found",
-        });
-    }
-
-    booking.bookingStatus =
-        req.body.bookingStatus || booking.bookingStatus;
-
-    booking.paymentStatus =
-        req.body.paymentStatus || booking.paymentStatus;
-
-    booking.paymentMethod =
-        req.body.paymentMethod || booking.paymentMethod;
-
-    booking.transactionId =
-        req.body.transactionId || booking.transactionId;
-
-    await booking.save();
-
-    await Notification.create({
-        sender: req.user._id,
-        receiver: booking.user,
-        venue: booking.venue,
-        booking: booking._id,
-        title: "Booking Updated",
-        message: `Your booking status is ${booking.bookingStatus}. Payment status is ${booking.paymentStatus}.`,
-        type:
-            booking.paymentStatus === "Paid"
-                ? "Payment"
-                : "Booking"
-    });
-
-    const user = await booking.populate("user", "fullName email");
-    const venue = await booking.populate("venue", "name");
-
     try {
 
-        await sendEmail(
+        const booking = await Booking.findById(req.params.id);
 
-            user.user.email,
+        if (!booking) {
+            return res.status(404).json({
+                message: "Booking not found",
+            });
+        }
 
-            "Booking Updated",
+        booking.bookingStatus =
+            req.body.bookingStatus || booking.bookingStatus;
 
-            `Dear ${user.user.fullName},
+        booking.paymentStatus =
+            req.body.paymentStatus || booking.paymentStatus;
+
+        booking.paymentMethod =
+            req.body.paymentMethod || booking.paymentMethod;
+
+        booking.transactionId =
+            req.body.transactionId || booking.transactionId;
+
+        await booking.save();
+
+        // Save notification
+        const notification = await Notification.create({
+
+            sender: req.user._id,
+            receiver: booking.user,
+            venue: booking.venue,
+            booking: booking._id,
+            title: "Booking Updated",
+            message: `Your booking status is ${booking.bookingStatus}. Payment status is ${booking.paymentStatus}.`,
+            type:
+                booking.paymentStatus === "Paid"
+                    ? "Payment"
+                    : "Booking"
+
+        });
+
+        const user = await booking.populate("user", "fullName email");
+        const venue = await booking.populate("venue", "name");
+
+        try {
+
+            await sendEmail(
+
+                user.user.email,
+
+                "Booking Updated",
+
+                `Dear ${user.user.fullName},
 
 Your booking has been updated successfully.
 
@@ -311,59 +333,75 @@ Payment Status : ${booking.paymentStatus}
 
 Thank you for choosing Maidan.`
 
-        );
+            );
 
-    } catch (err) {
+        } catch (err) {
 
-        console.log(err.message);
+            console.log(err.message);
+
+        }
+
+        // Send realtime notification
+        sendNotification(notification);
+
+        return res.status(200).json(booking);
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message,
+        });
 
     }
 
-    return res.status(200).json(booking);
-
 };
+
 
 // Cancel/Delete booking
 const deleteBooking = async (req, res) => {
 
-    const booking = await Booking.findById(req.params.id);
-
-    if (!booking) {
-        return res.status(404).json({
-            message: "Booking not found",
-        });
-    }
-
-    booking.bookingStatus = "Cancelled";
-    booking.cancelledBy = req.user._id;
-    booking.cancellationReason =
-        req.body.cancellationReason || "Cancelled by admin";
-
-    await booking.save();
-
-
-    await Notification.create({
-        sender: req.user._id,
-        receiver: booking.user,
-        venue: booking.venue,
-        booking: booking._id,
-        title: "Booking Cancelled",
-        message: `Your booking has been cancelled. Reason: ${booking.cancellationReason}`,
-        type: "Cancellation"
-    });
-
-    const user = await booking.populate("user", "fullName email");
-    const venue = await booking.populate("venue", "name");
-
     try {
 
-        await sendEmail(
+        const booking = await Booking.findById(req.params.id);
 
-            user.user.email,
+        if (!booking) {
+            return res.status(404).json({
+                message: "Booking not found",
+            });
+        }
 
-            "Booking Cancelled",
+        booking.bookingStatus = "Cancelled";
+        booking.cancelledBy = req.user._id;
+        booking.cancellationReason =
+            req.body.cancellationReason || "Cancelled by admin";
 
-            `Dear ${user.user.fullName},
+        await booking.save();
+
+        // Save notification
+        const notification = await Notification.create({
+
+            sender: req.user._id,
+            receiver: booking.user,
+            venue: booking.venue,
+            booking: booking._id,
+            title: "Booking Cancelled",
+            message: `Your booking has been cancelled. Reason: ${booking.cancellationReason}`,
+            type: "Cancellation"
+
+        });
+
+        const user = await booking.populate("user", "fullName email");
+        const venue = await booking.populate("venue", "name");
+
+        try {
+
+            await sendEmail(
+
+                user.user.email,
+
+                "Booking Cancelled",
+
+                `Dear ${user.user.fullName},
 
 Your booking has been cancelled.
 
@@ -374,19 +412,31 @@ Reason : ${booking.cancellationReason}
 Thank you,
 Maidan Team.`
 
-        );
+            );
 
-    } catch (err) {
+        } catch (err) {
 
-        console.log(err.message);
+            console.log(err.message);
+
+        }
+
+        // Send realtime notification
+        sendNotification(notification);
+
+        return res.status(200).json({
+            message: "Booking cancelled successfully",
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message,
+        });
 
     }
 
-    return res.status(200).json({
-        message: "Booking cancelled successfully",
-    });
-
 };
+
 
 module.exports = {
     getAllBookings,
