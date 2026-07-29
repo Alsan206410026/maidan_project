@@ -40,7 +40,7 @@ app.use('/api/booking', require('./routes/bookingRoutes.js'));
 app.use('/api/timeslot', require('./routes/timeSlotRoutes.js'));  
 // app.use('/api/payment', require('./routes/paymentRoutes.js'));
 // app.use('/api/chat', require('./routes/chatRoutes.js'));
-// app.use('/api/notification', require('./routes/notificationRoutes.js'));
+
 
 const port = process.env.PORT || 5001;
 app.listen(port, () => {

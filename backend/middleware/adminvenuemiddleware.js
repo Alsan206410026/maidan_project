@@ -23,7 +23,8 @@ const venueAdminMiddleware = async (req, res, next) => {
         }
 
         // Get the venue being updated
-        const venue = await Venue.findById(req.params.id);
+        const venueId = req.params.id || req.body.venue;
+        const venue = await Venue.findById(venueId);
 
         if (!venue) {
             return res.status(404).json({

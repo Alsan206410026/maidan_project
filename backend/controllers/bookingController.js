@@ -2,14 +2,44 @@ const Booking = require("../model/Booking.js");
 const Venue = require("../model/Venue.js");
 const TimeSlot = require("../model/TimeSlot.js");
 const sendEmail = require("../utils/sendEmail.js");
+const Notification = require("../model/Notification.js");
 
 // Get all bookings
 const getAllBookings = async (req, res) => {
     try {
 
-        const bookings = await Booking.find()
-            .populate("user", "fullName email phoneNumber")
-            .populate("venue", "name location price")
+        if (req.user.role === "super_admin") {
+            const bookings = await Booking.find()
+                .populate("user", "fullName email phoneNumber")
+                .populate("venue", "name location")
+                .populate("slot");
+
+            return res.status(200).json(bookings);
+
+        }
+
+        if (req.user.role === "admin") {
+
+            const venueIds = await Venue.find({
+                admin: req.user._id
+            }).distinct("_id");
+
+            const bookings = await Booking.find({
+                venue: {
+                    $in: venueIds
+                }
+            })
+                .populate("user", "fullName email phoneNumber")
+                .populate("venue", "name location")
+                .populate("slot");
+
+            return res.status(200).json(bookings);
+        }
+
+        const bookings = await Booking.find({
+            user: req.user._id
+        })
+            .populate("venue", "name location")
             .populate("slot");
 
         return res.status(200).json(bookings);
@@ -37,7 +67,26 @@ const getBookingById = async (req, res) => {
             });
         }
 
-        return res.status(200).json(booking);
+        if (req.user.role === "super_admin") {
+            return res.status(200).json(booking);
+        }
+        const venue = await Venue.findById(booking.venue);
+
+        if (
+            req.user.role === "admin" &&
+            venue.admin.toString() === req.user._id.toString()
+        ) {
+            return res.status(200).json(booking);
+        }
+
+        if (booking.user._id.toString() === req.user._id.toString()) {
+            return res.status(200).json(booking);
+        }
+        else {
+            return res.status(403).json({
+                message: "Unauthorized"
+            });
+        }
 
     } catch (error) {
         return res.status(500).json({
@@ -153,6 +202,16 @@ const createBooking = async (req, res) => {
 
         });
 
+        const notification = await Notification.create({
+            sender: req.user._id,
+            receiver: venueData.admin,
+            venue: venueData._id,
+            booking: booking._id,
+            title: "New Booking",
+            message: `${req.user.fullName} booked ${venueData.name} on ${bookingDate}.`,
+            type: "Booking"
+        });
+
         try {
 
             await sendEmail(
@@ -216,6 +275,19 @@ const updateBooking = async (req, res) => {
 
     await booking.save();
 
+    await Notification.create({
+        sender: req.user._id,
+        receiver: booking.user,
+        venue: booking.venue,
+        booking: booking._id,
+        title: "Booking Updated",
+        message: `Your booking status is ${booking.bookingStatus}. Payment status is ${booking.paymentStatus}.`,
+        type:
+            booking.paymentStatus === "Paid"
+                ? "Payment"
+                : "Booking"
+    });
+
     const user = await booking.populate("user", "fullName email");
     const venue = await booking.populate("venue", "name");
 
@@ -268,6 +340,17 @@ const deleteBooking = async (req, res) => {
         req.body.cancellationReason || "Cancelled by admin";
 
     await booking.save();
+
+
+    await Notification.create({
+        sender: req.user._id,
+        receiver: booking.user,
+        venue: booking.venue,
+        booking: booking._id,
+        title: "Booking Cancelled",
+        message: `Your booking has been cancelled. Reason: ${booking.cancellationReason}`,
+        type: "Cancellation"
+    });
 
     const user = await booking.populate("user", "fullName email");
     const venue = await booking.populate("venue", "name");
