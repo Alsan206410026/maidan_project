@@ -33,6 +33,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/authRoutes.js'));
+app.use('/api/user', require('./routes/userRoutes.js'));
 app.use('/api/venue', require('./routes/venueRoutes.js'));
 app.use('/api/venuecategory', require('./routes/venueCategoryRoutes.js'));
 app.use('/api/tournament', require('./routes/tournamentRoutes.js'));

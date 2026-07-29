@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createBooking, getAllBookings, getBookingById, updateBooking, deleteBooking, searchBookings } = require('../controllers/bookingController');
 const { protect } = require('../middleware/authmiddleware');
-const { superAdminOrAdmin } = require('../middleware/superAdminOrAdminMiddleware');
+const {venueAdminMiddleware} = require('../middleware/adminvenuemiddleware.js');
 
 router.route("/")
     .get(protect, getAllBookings)
@@ -13,7 +13,7 @@ router.route("/search")
 
 router.route("/:id")
     .get(protect, getBookingById)
-    .put(protect,superAdminOrAdmin, updateBooking)
-    .delete(protect,superAdminOrAdmin, deleteBooking);
+    .put(protect,venueAdminMiddleware, updateBooking)
+    .delete(protect,venueAdminMiddleware, deleteBooking);
 
 module.exports = router;
