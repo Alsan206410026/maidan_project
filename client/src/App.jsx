@@ -10,12 +10,12 @@ import Contact from "./Frontend/Contact";
 import VenueDetails from "./Frontend/VenueDetails";
 import UserDashboard from "./Backend/UserDashboard";
 import AdminDashboard from "./Backend/AdminDashboard";
-import SuperAdminDashboard from "./Backend/SuperAdminDashboard";
-import SuperAdminSidebar from "./Backend/SuperAdminSidebar";
-import SuperAdminManageUser from "./Backend/SuperAdminManageUser";
-import SuperAdminManageVenue from "./Backend/SuperAdminManageVenue";
-import SuperAdminManageTournament from "./Backend/SuperAdminManageTournament";
-import SuperAdminChat from "./Backend/SuperAdminChat";
+import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
+import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
+import SuperAdminManageUser from "./Backend/SuperAdmin/SuperAdminManageUser";
+import SuperAdminManageVenue from "./Backend/SuperAdmin/SuperAdminManageVenue";
+import SuperAdminManageTournament from "./Backend/SuperAdmin/SuperAdminManageTournament";
+import SuperAdminChat from "./Backend/SuperAdmin/SuperAdminChat";
 
 function App() {
   return (

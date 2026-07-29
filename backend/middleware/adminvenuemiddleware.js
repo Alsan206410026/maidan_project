@@ -10,16 +10,16 @@ const venueAdminMiddleware = async (req, res, next) => {
             });
         }
 
-        // Super admin can edit any venue
-        if (req.user.role === "super_admin") {
-            return next();
-        }
-
-        // Normal users cannot edit
-        if (req.user.role !== "admin") {
+        // Check if the user is an admin
+        if (!req.user || req.user.role !== "admin") {
             return res.status(403).json({
                 message: "Access denied",
             });
+        }
+
+        // Super admin can edit any venue
+        if (req.user.role === "super_admin") {
+            return next();
         }
 
         // Get the venue being updated
