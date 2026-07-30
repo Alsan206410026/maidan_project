@@ -13,7 +13,10 @@ function initializeWebSocket(server) {
 
         console.log("New Client Connected");
 
-        ws.on("message", async (message) => {
+        //ws.on means when the server receives a message from the client
+
+        ws.on("message", async (message) => { 
+
 
             try {
 

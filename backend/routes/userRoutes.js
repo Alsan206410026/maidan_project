@@ -6,4 +6,5 @@ const { superAdmin } = require('../middleware/superAdminmiddleware.js');
 
 router.route('/:id').get(protect, getUserProfile).put(protect,superAdmin, updateUserProfile).delete(protect, superAdmin, deleteUserProfile);
 
+
 module.exports = router;
