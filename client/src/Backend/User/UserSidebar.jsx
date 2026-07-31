@@ -19,10 +19,10 @@ function UserSidebar() {
   }, [isMenuOpen]);
 
   const menuItems = [
-    { name: "Dashboard", path: "/admin-dashboard", icon: <FaTachometerAlt /> },
-    { name: "Book Venue", path: "/admin/book-venue", icon: <FaFutbol /> },
-    { name: "View Tournaments", path: "/admin/tournaments", icon: <FaTrophy /> },
-    { name: "Chat", path: "/admin/chat", icon: <FaComments /> },
+    { name: "Dashboard", path: "/user-dashboard", icon: <FaTachometerAlt /> },
+    { name: "Book Venue", path: "/user/book-venue", icon: <FaFutbol /> },
+    { name: "View Tournaments", path: "/user/tournaments", icon: <FaTrophy /> },
+    { name: "Chat", path: "/user/chat", icon: <FaComments /> },
     { name: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
   ];
 
@@ -73,14 +73,14 @@ function UserSidebar() {
         {/* Desktop Header */}
         <div className="hidden border-b bg-gradient-to-r from-green-700 to-green-600 px-6 py-8 lg:block">
           <img src={MaidanLogo} alt="Maidan Logo" className="mx-auto h-16 rounded-lg bg-white p-2 shadow" />
-          <h2 className="mt-4 text-center text-2xl font-bold text-white">Admin</h2>
-          <p className="mt-1 text-center text-sm text-green-100">Sports Management System</p>
+          <h2 className="mt-4 text-center text-2xl font-bold text-white">User</h2>
+          <p className="mt-1 text-center text-sm text-green-100">Sports Booking System</p>
         </div>
 
         {/* Mobile Header */}
         <div className="border-b border-gray-200 px-5 py-4 lg:hidden">
-          <h2 className="text-lg font-bold text-gray-800">Admin</h2>
-          <p className="text-sm text-gray-500">Sports Management System</p>
+          <h2 className="text-lg font-bold text-gray-800">User</h2>
+          <p className="text-sm text-gray-500">Sports Booking System</p>
         </div>
 
         {/* Navigation */}
