@@ -21,7 +21,8 @@ import AdminDashboard from "./Backend/Admin/AdminDashboard";
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 
-//
+//user venue
+import BookVenue from "./Backend/User/BookVenue/BookVenue";
 
 // Super Admin dashboard and sidebar
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
@@ -47,6 +48,7 @@ import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 // Chat
 import ChatList from "./Backend/SuperAdmin/chat/ChatList";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
+
 
 
 function App() {
@@ -108,6 +110,9 @@ function App() {
             {/* User Dashboard */}
             <Route element={<UserSidebar />}>
                 <Route path="/user-dashboard" element={<UserDashboard />} />
+                <Route path = "user/book-venue" element ={<BookVenue/>} />
+
+
             </Route>
 
 
