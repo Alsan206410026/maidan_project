@@ -13,11 +13,17 @@ import Contact from "./Frontend/Contact";
 import Register from "./Register";
 import Login from "./Login";
 
-// Dashboards
-import UserDashboard from "./Backend/User/UserDashboard";
+
+// admin dashboard and sidebar
 import AdminDashboard from "./Backend/Admin/AdminDashboard";
 
-// Super Admin
+//user dashboard and sidebar
+import UserSidebar from "./Backend/User/UserSidebar";
+import UserDashboard from "./Backend/User/UserDashboard";
+
+//
+
+// Super Admin dashboard and sidebar
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
 import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
 
@@ -63,7 +69,7 @@ function App() {
 
 
             {/* Dashboard */}
-            <Route path="/dashboard" element={<UserDashboard />} />
+          
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
 
@@ -97,7 +103,14 @@ function App() {
                 <Route path="/super-admin/chat" element={<ChatList />} />
                 <Route path="/super-admin/chat/:userId" element={<SuperAdminChat />} />
 
+            </Route> 
+
+            {/* User Dashboard */}
+            <Route element={<UserSidebar />}>
+                <Route path="/user-dashboard" element={<UserDashboard />} />
             </Route>
+
+
 
         </Routes>
     );
