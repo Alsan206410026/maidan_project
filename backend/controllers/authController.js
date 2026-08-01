@@ -6,14 +6,23 @@ const sendEmail = require("../utils/sendEmail.js");
 const passport = require("passport");
 
 // Generate JWT
-const generateToken = (id) => {
-    return jwt.sign(
+const generateToken = (id, res) => {
+    const token = jwt.sign(
         { id },
         process.env.JWT_SECRET,
         {
-            expiresIn: "100d",
+            expiresIn: "15d",
         }
     );
+
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+    });
+
+    return token;
 };
 
 // ========================= REGISTER USER =========================
@@ -213,6 +222,8 @@ const verifyOtp = async (req, res) => {
             }
         });
 
+        const token = generateToken(user._id, res);
+
         return res.status(201).json({
             message: "Registration successful",
 
@@ -221,7 +232,7 @@ const verifyOtp = async (req, res) => {
             username: user.username,
             email: user.email,
             phoneNumber: user.phoneNumber,
-            token: generateToken(user._id),
+            token ,
         });
 
     } catch (error) {
@@ -284,7 +295,7 @@ const loginUser = async (req, res) => {
             username: user.username,
             email: user.email,
             phoneNumber: user.phoneNumber,
-            token: generateToken(user._id),
+            token: generateToken(user._id, res),
         });
         
         }
@@ -420,6 +431,7 @@ const resetPassword = async (req, res) => {
 };
 
 
+
 // get all users (for super admin)
 const getUsers = async (req, res) => {
 
@@ -439,6 +451,18 @@ const getUsers = async (req, res) => {
 
     }
 
+};
+
+//logout user
+const logoutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+    });
+    return res.status(200).json({
+        message: "Logged out successfully",
+    });
 };
 
 //oauth authenticate
@@ -473,4 +497,5 @@ module.exports = {
     verifyOtp,
     forgotPassword,
     resetPassword,
+    logoutUser
 };
