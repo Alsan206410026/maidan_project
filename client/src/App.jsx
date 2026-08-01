@@ -20,6 +20,9 @@ import AdminSidebar from "./Backend/Admin/AdminSidebar";
 //Admin Venue
 import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
 
+//Admin Manage Venue Booking
+import AdminManageVenueBooking from "./Backend/Admin/Manage/AdminManageVenueBooking";
+
 // User dashboard and sidebar
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
@@ -176,6 +179,10 @@ function App() {
         path="/admin/venue"
         element={<AdminVenue />}
       />
+      <Route
+      path="/admin/manage-bookings"
+      element={<AdminManageVenueBooking />}
+    />
 
       </Route>
 
