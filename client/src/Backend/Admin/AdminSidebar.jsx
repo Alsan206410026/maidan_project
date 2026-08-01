@@ -2,16 +2,14 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   FaTachometerAlt,
-  FaUsers,
-  FaFutbol,
-  FaTrophy,
+  FaCalendarCheck,
   FaComments,
   FaSignOutAlt,
 } from "react-icons/fa";
 
 import MaidanLogo from "../../assets/Maidan_logo.png";
 
-function SuperAdminSidebar() {
+function AdminSidebar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -29,27 +27,17 @@ function SuperAdminSidebar() {
   const menuItems = [
     {
       name: "Dashboard",
-      path: "/super-admin-dashboard",
+      path: "/admin-dashboard",
       icon: <FaTachometerAlt />,
     },
     {
-      name: "Manage Users",
-      path: "/super-admin/users",
-      icon: <FaUsers />,
-    },
-    {
-      name: "Manage Venues",
-      path: "/super-admin/venues",
-      icon: <FaFutbol />,
-    },
-    {
-      name: "Manage Tournaments",
-      path: "/super-admin/tournaments",
-      icon: <FaTrophy />,
+      name: "Bookings",
+      path: "/admin/bookings",
+      icon: <FaCalendarCheck />,
     },
     {
       name: "Chat",
-      path: "/super-admin/chat",
+      path: "/admin/chat",
       icon: <FaComments />,
     },
     {
@@ -78,18 +66,21 @@ function SuperAdminSidebar() {
         >
           <span className="flex flex-col gap-1">
             <span
-              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${isMenuOpen ? "translate-y-1.5 rotate-45" : ""
-                }`}
+              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${
+                isMenuOpen ? "translate-y-1.5 rotate-45" : ""
+              }`}
             />
 
             <span
-              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${isMenuOpen ? "opacity-0" : ""
-                }`}
+              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${
+                isMenuOpen ? "opacity-0" : ""
+              }`}
             />
 
             <span
-              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${isMenuOpen ? "-translate-y-1.5 -rotate-45" : ""
-                }`}
+              className={`block h-0.5 w-6 bg-gray-700 transition-all duration-300 ${
+                isMenuOpen ? "-translate-y-1.5 -rotate-45" : ""
+              }`}
             />
           </span>
         </button>
@@ -131,10 +122,11 @@ function SuperAdminSidebar() {
         transition-transform
         duration-300
 
-        ${isMenuOpen
+        ${
+          isMenuOpen
             ? "translate-x-0"
             : "translate-x-full"
-          }
+        }
 
         lg:top-0
         lg:left-0
@@ -158,11 +150,11 @@ function SuperAdminSidebar() {
           />
 
           <h2 className="mt-4 text-center text-2xl font-bold text-white">
-            Super Admin
+            Admin Panel
           </h2>
 
           <p className="mt-1 text-center text-sm text-green-100">
-            Sports Management System
+            Venue Management
           </p>
 
         </div>
@@ -181,9 +173,10 @@ function SuperAdminSidebar() {
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 ${isActive
-                      ? "bg-green-100 text-green-700 font-semibold"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-green-700"
+                    `flex items-center gap-4 rounded-xl px-4 py-3 transition-all duration-200 ${
+                      isActive
+                        ? "bg-green-100 text-green-700 font-semibold"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-green-700"
                     }`
                   }
                 >
@@ -195,25 +188,35 @@ function SuperAdminSidebar() {
               </li>
 
             ))}
+
           </ul>
 
         </nav>
+
         {/* Mobile Drawer Header */}
+
         <div className="border-b border-gray-200 px-5 py-4 lg:hidden">
+
           <h2 className="text-lg font-bold text-gray-800">
-            Super Admin
+            Admin Panel
           </h2>
 
           <p className="text-sm text-gray-500">
-            Sports Management System
+            Venue Management
           </p>
+
         </div>
+
         {/* Footer */}
+
         <div className="border-t border-gray-200 p-5">
+
           <p className="text-center text-xs text-gray-500">
             © 2026 Sports Booking System
           </p>
+
         </div>
+
       </aside>
 
       {/* ================= MAIN CONTENT ================= */}
@@ -234,8 +237,9 @@ function SuperAdminSidebar() {
           <Outlet />
         </div>
       </main>
+
     </div>
   );
 }
 
-export default SuperAdminSidebar;
+export default AdminSidebar;
