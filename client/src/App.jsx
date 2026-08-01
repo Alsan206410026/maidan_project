@@ -19,6 +19,12 @@ import AdminDashboard from "./Backend/Admin/AdminDashboard";
 import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
 import AdminManageVenueBooking from "./Backend/Admin/Manage/AdminManageVenueBooking";
 
+import AdminChat from "./Backend/Admin/Chat/AdminChat";
+import AdminChatList from "./Backend/Admin/Chat/AdminChatList";
+import AdminChatLayout from "./Backend/Admin/Chat/AdminChatLayout";
+import AdminChatWindow from "./Backend/Admin/Chat/AdminChatWindow";
+
+
 // User
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
@@ -93,10 +99,15 @@ function App() {
       </Route>
 
       {/* Admin */}
-      <Route element={<AdminSidebar />}>
+    <Route element={<AdminSidebar />}>
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/venue" element={<AdminVenue />} />
         <Route path="/admin/manage-bookings" element={<AdminManageVenueBooking />} />
+
+        <Route path="/admin/chat" element={<AdminChatList />} />
+        <Route path="/admin/chat/:userId" element={<AdminChatLayout />}>
+          <Route index element={<AdminChatWindow />} />
+        </Route>
       </Route>
 
     </Routes>

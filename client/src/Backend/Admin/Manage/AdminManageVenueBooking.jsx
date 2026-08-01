@@ -58,6 +58,34 @@ function AdminManageVenueBooking() {
       price: 1200,
       status: "Available",
       customer: "-"
+    },
+    {
+      id: 7,
+      time: "12:00 PM - 1:00 PM",
+      price: 1200,
+      status: "Available",
+      customer: "-"
+    },
+    {
+      id: 8,
+      time: "12:00 PM - 1:00 PM",
+      price: 1200,
+      status: "Available",
+      customer: "-"
+    },
+    {
+      id: 9,
+      time: "1:00 PM - 2:00 PM",
+      price: 1200,
+      status: "Available",
+      customer: "-"
+    },
+    {
+      id: 10,
+      time: "2:00 PM - 3:00 PM",
+      price: 1200,
+      status: "Available",
+      customer: "-"
     }
   ]);
 
