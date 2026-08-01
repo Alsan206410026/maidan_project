@@ -431,6 +431,7 @@ const resetPassword = async (req, res) => {
 };
 
 
+
 // get all users (for super admin)
 const getUsers = async (req, res) => {
 
@@ -450,6 +451,18 @@ const getUsers = async (req, res) => {
 
     }
 
+};
+
+//logout user
+const logoutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+    });
+    return res.status(200).json({
+        message: "Logged out successfully",
+    });
 };
 
 //oauth authenticate
@@ -484,4 +497,5 @@ module.exports = {
     verifyOtp,
     forgotPassword,
     resetPassword,
+    logoutUser
 };
