@@ -1,179 +1,360 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  FaCalendarCheck,
+  FaClock,
+  FaMoneyBillWave,
+  FaHourglassHalf,
+} from "react-icons/fa";
 
 function AdminDashboard() {
-  const stats = [
-    { label: "Venues Available", value: "24", icon: "🏟️" },
-    { label: "Today Bookings", value: "18", icon: "📅" },
-    { label: "Pending Approvals", value: "7", icon: "⏳" },
-    { label: "Active Chats", value: "13", icon: "💬" },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    todayBookings: 0,
+    revenue: 0,
+    pendingBookings: 0,
+  });
+  const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
 
-  const features = [
-    {
-      title: "View Venues",
-      description: "Check venue details, availability, and booking status.",
-      icon: "🏟️",
-    },
-    {
-      title: "Manage Bookings",
-      description: "Review, update, and track all venue bookings.",
-      icon: "📋",
-    },
-    {
-      title: "Create Booking Time",
-      description: "Add available time slots and booking schedules.",
-      icon: "🕒",
-    },
-    {
-      title: "Chat with Users",
-      description: "Respond to user questions and booking-related messages.",
-      icon: "💬",
-    },
-    {
-      title: "Chat with Super Admin",
-      description: "Coordinate booking changes and system updates.",
-      icon: "👤",
-    },
-    {
-      title: "Booking Overview",
-      description: "Monitor upcoming bookings and venue occupancy.",
-      icon: "📊",
-    },
-  ];
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const recentBookings = [
+  useEffect(() => {
+    filterBookingsByDate(selectedDate);
+  }, [selectedDate, bookings]);
+
+  const fetchDashboard = async () => {
+    try {
+      const response = await axios.get("http://localhost:5001/api/booking");
+      const bookingData = response.data;
+      setBookings(bookingData);
+
+      const today = new Date().toISOString().split("T")[0];
+      const todayBookings = bookingData.filter(
+        (booking) => booking.date && booking.date.substring(0, 10) === today
+      );
+      const pendingBookings = bookingData.filter(
+        (booking) => booking.status?.toLowerCase() === "pending"
+      );
+      const revenue = bookingData.reduce(
+        (sum, booking) =>
+          sum +
+          Number(
+            booking.totalAmount || booking.amount || booking.price || 0
+          ),
+        0
+      );
+
+      setStats({
+        totalBookings: bookingData.length,
+        todayBookings: todayBookings.length,
+        revenue,
+        pendingBookings: pendingBookings.length,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterBookingsByDate = (date) => {
+    const filtered = bookings.filter(
+      (booking) => booking.date && booking.date.substring(0, 10) === date
+    );
+    setFilteredBookings(filtered);
+  };
+
+  const statsData = [
     {
-      venue: "Green Valley Stadium",
-      time: "Today, 4:00 PM",
-      status: "Confirmed",
+      title: "Total Bookings",
+      value: stats.totalBookings,
+      icon: <FaCalendarCheck />,
+      color: "bg-green-100 text-green-600",
     },
     {
-      venue: "City Sports Arena",
-      time: "Today, 6:30 PM",
-      status: "Pending",
+      title: "Today's Bookings",
+      value: stats.todayBookings,
+      icon: <FaClock />,
+      color: "bg-blue-100 text-blue-600",
     },
     {
-      venue: "Grand Turf Ground",
-      time: "Tomorrow, 9:00 AM",
-      status: "Approved",
+      title: "Revenue",
+      value: `Rs. ${stats.revenue}`,
+      icon: <FaMoneyBillWave />,
+      color: "bg-yellow-100 text-yellow-600",
+    },
+    {
+      title: "Pending",
+      value: stats.pendingBookings,
+      icon: <FaHourglassHalf />,
+      color: "bg-red-100 text-red-600",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-lime-100 px-4 py-10">
-      <div className="mx-auto w-full max-w-7xl">
-        <div className="overflow-hidden rounded-[2rem] bg-white shadow-2xl ring-1 ring-black/5">
-          <div className="grid gap-8 bg-gradient-to-r from-emerald-700 via-green-600 to-lime-500 px-8 py-10 text-white md:grid-cols-2 md:items-center">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
-                Admin Panel
-              </p>
-              <h1 className="mt-3 text-4xl font-bold md:text-5xl">
-                Admin Dashboard
-              </h1>
-              <p className="mt-4 max-w-xl text-white/90">
-                Manage venues, bookings, booking times, and chat with users or
-                super admin from one clean dashboard.
-              </p>
+    <div className="space-y-8">
+      {/* Dashboard Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+        <p className="mt-2 text-gray-500">
+          Welcome back! Here's today's venue overview.
+        </p>
+      </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <button className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50">
-                  View Venues
-                </button>
-                <button className="rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                  Manage Bookings
-                </button>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {statsData.map((card) => (
+          <div
+            key={card.title}
+            className="rounded-xl bg-white p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">{card.title}</p>
+                <h2 className="mt-2 text-3xl font-bold text-gray-800">
+                  {loading ? "--" : card.value}
+                </h2>
+              </div>
+              <div
+                className={`rounded-full p-4 text-3xl ${card.color}`}
+              >
+                {card.icon}
               </div>
             </div>
+          </div>
+        ))}
+      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl bg-white/15 p-4 backdrop-blur-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-2xl">{item.icon}</p>
-                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/90">
-                      Live
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">{item.label}</p>
-                  <p className="mt-1 text-3xl font-bold">{item.value}</p>
-                </div>
-              ))}
-            </div>
+      {/* ================= Calendar & Booking Details ================= */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Calendar */}
+        <div className="rounded-xl bg-white p-6 shadow-md">
+          <h2 className="mb-5 text-xl font-semibold">Booking Calendar</h2>
+          <label className="mb-2 block text-sm font-medium text-gray-600">
+            Select Date
+          </label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 p-3 outline-none transition focus:border-green-600"
+          />
+
+          <div className="mt-6 rounded-lg bg-green-50 p-4">
+            <h3 className="font-semibold text-green-700">Booking Summary</h3>
+            <p className="mt-3 text-sm text-gray-500">Selected Date</p>
+            <p className="text-lg font-bold text-gray-800">{selectedDate}</p>
+            <p className="mt-4 text-sm text-gray-500">Total Bookings</p>
+            <p className="text-2xl font-bold text-green-700">
+              {filteredBookings.length}
+            </p>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-          <div>
-            <div className="mb-5">
-              <h2 className="text-2xl font-bold text-slate-800">
-                Admin Features
-              </h2>
-              <p className="mt-2 text-slate-600">
-                Only admin actions are shown here. No sidebar is used.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-black/5 transition-transform hover:-translate-y-1"
-                >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-2xl">
-                    {feature.icon}
-                  </div>
-                  <h3 className="mt-5 text-xl font-semibold text-slate-800">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+        {/* Booking Details */}
+        <div className="rounded-xl bg-white p-6 shadow-md lg:col-span-2">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              Bookings on Selected Date
+            </h2>
+            <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-700">
+              {selectedDate}
+            </span>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-black/5">
-            <h3 className="text-xl font-bold text-slate-800">
-              Recent Bookings
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Quick view of booking activity.
-            </p>
-
-            <div className="mt-6 space-y-4">
-              {recentBookings.map((item) => (
-                <div
-                  key={item.venue}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-800">{item.venue}</p>
-                      <p className="mt-1 text-sm text-slate-600">{item.time}</p>
-                    </div>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      {item.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 rounded-2xl bg-emerald-50 p-4">
-              <p className="text-sm font-semibold text-emerald-800">
-                Booking Control
-              </p>
-              <p className="mt-1 text-sm text-emerald-700">
-                Admin can create booking time slots and coordinate updates with
-                super admin.
-              </p>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="border-b bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                    Customer
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                    Phone
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                    Time
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                    Duration
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      Loading bookings...
+                    </td>
+                  </tr>
+                ) : filteredBookings.length > 0 ? (
+                  filteredBookings.map((booking) => (
+                    <tr
+                      key={booking._id}
+                      className="border-b hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-4 font-medium text-gray-800">
+                        {booking.user?.fullName ||
+                          booking.customerName ||
+                          "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.user?.phone || booking.phone || "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.time || booking.startTime || "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.duration
+                          ? `${booking.duration} hr`
+                          : booking.hours
+                          ? `${booking.hours} hr`
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            booking.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : booking.status === "Pending"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : booking.status === "Cancelled"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {booking.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      No bookings found for this date.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
+        </div>
+      </div>
+
+      {/* ================= RECENT BOOKINGS ================= */}
+      <div className="rounded-xl bg-white p-6 shadow-md">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Recent Bookings</h2>
+          <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-700">
+            Latest {bookings.slice(0, 5).length}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="border-b bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                  Customer
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                  Phone
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                  Time
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    Loading recent bookings...
+                  </td>
+                </tr>
+              ) : bookings.length > 0 ? (
+                bookings
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt) - new Date(a.createdAt)
+                  )
+                  .slice(0, 5)
+                  .map((booking) => (
+                    <tr
+                      key={booking._id}
+                      className="border-b hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-4 font-medium text-gray-800">
+                        {booking.user?.fullName ||
+                          booking.customerName ||
+                          "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.user?.phone || booking.phone || "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.date
+                          ? new Date(booking.date).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-4 text-gray-600">
+                        {booking.time || booking.startTime || "-"}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            booking.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : booking.status === "Pending"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : booking.status === "Cancelled"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {booking.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No recent bookings available.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
