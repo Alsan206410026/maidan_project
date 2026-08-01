@@ -220,7 +220,12 @@ const verifyOtp = async (req, res) => {
             if (err) { 
                 console.log(err);
             }
-        });
+        }); 
+
+        //remove otp and otpExpires from user model
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
 
         const token = generateToken(user._id, res);
 
