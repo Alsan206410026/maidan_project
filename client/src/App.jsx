@@ -13,14 +13,18 @@ import Contact from "./Frontend/Contact";
 import Register from "./Register";
 import Login from "./Login";
 
-// Admin
+// Admin dashboard and sidebar
 import AdminDashboard from "./Backend/Admin/AdminDashboard";
+import AdminSidebar from "./Backend/Admin/AdminSidebar";
 
-// User
+//Admin Venue
+import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
+
+// User dashboard and sidebar
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 
-// Super Admin
+// Super Admin dashboard and sidebar
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
 import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
 
@@ -50,6 +54,7 @@ function App() {
     <Routes>
 
       {/* Frontend */}
+
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -63,10 +68,8 @@ function App() {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
 
-      {/* Admin */}
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      {/* ================= SUPER ADMIN ================= */}
 
-      {/* Super Admin */}
       <Route element={<SuperAdminSidebar />}>
 
         <Route
@@ -75,6 +78,7 @@ function App() {
         />
 
         {/* User */}
+
         <Route
           path="/super-admin/users"
           element={<SuperAdminManageUser />}
@@ -91,6 +95,7 @@ function App() {
         />
 
         {/* Venue */}
+
         <Route
           path="/super-admin/venues"
           element={<SuperAdminManageVenue />}
@@ -112,6 +117,7 @@ function App() {
         />
 
         {/* Tournament */}
+
         <Route
           path="/super-admin/tournaments"
           element={<SuperAdminManageTournament />}
@@ -133,34 +139,44 @@ function App() {
         />
 
         {/* Chat */}
-        <Route path="/super-admin/chat" element={<ChatLayout />}>
 
-          <Route
-            index
-            element={
-              <div className="flex h-full items-center justify-center rounded-2xl bg-white shadow-lg">
-                <h2 className="text-2xl font-semibold text-gray-400">
-                  Select a chat
-                </h2>
-              </div>
-            }
-          />
+        <Route
+          path="/super-admin/chat"
+          element={<ChatList />}
+        />
 
-          <Route
-            path=":userId"
-            element={<SuperAdminChat />}
-          />
-
-        </Route>
+        <Route
+          path="/super-admin/chat/:userId"
+          element={<SuperAdminChat />}
+        />
 
       </Route>
 
-      {/* User Dashboard */}
+      {/* ================= USER ================= */}
+
       <Route element={<UserSidebar />}>
+
         <Route
           path="/user-dashboard"
           element={<UserDashboard />}
         />
+
+      </Route>
+
+      {/* ================= ADMIN ================= */}
+
+      <Route element={<AdminSidebar />}>
+
+        <Route
+          path="/admin-dashboard"
+          element={<AdminDashboard />}
+        />
+
+        <Route
+        path="/admin/venue"
+        element={<AdminVenue />}
+      />
+
       </Route>
 
     </Routes>
