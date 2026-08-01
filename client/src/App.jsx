@@ -17,6 +17,9 @@ import Login from "./Login";
 import AdminDashboard from "./Backend/Admin/AdminDashboard";
 import AdminSidebar from "./Backend/Admin/AdminSidebar";
 
+//Admin Venue
+import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
+
 // User dashboard and sidebar
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
@@ -168,6 +171,11 @@ function App() {
           path="/admin-dashboard"
           element={<AdminDashboard />}
         />
+
+        <Route
+        path="/admin/venue"
+        element={<AdminVenue />}
+      />
 
       </Route>
 
