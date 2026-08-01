@@ -24,6 +24,9 @@ import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 
+//user venue
+import BookVenue from "./Backend/User/BookVenue/BookVenue";
+
 // Super Admin dashboard and sidebar
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
 import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
@@ -48,6 +51,8 @@ import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 // Chat
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
+
+
 
 function App() {
   return (
@@ -167,10 +172,13 @@ function App() {
 
       <Route element={<AdminSidebar />}>
 
-        <Route
-          path="/admin-dashboard"
-          element={<AdminDashboard />}
-        />
+            {/* User Dashboard */}
+            <Route element={<UserSidebar />}>
+                <Route path="/user-dashboard" element={<UserDashboard />} />
+                <Route path = "user/book-venue" element ={<BookVenue/>} />
+
+
+            </Route>
 
         <Route
         path="/admin/venue"
