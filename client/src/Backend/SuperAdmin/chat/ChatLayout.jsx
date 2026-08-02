@@ -14,7 +14,20 @@ function ChatLayout() {
         </div>
 
         <div className="col-span-8 xl:col-span-9">
-          <Outlet />
+          {userId ? (
+            <Outlet />
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-2xl bg-white shadow-lg">
+              <div className="text-center text-gray-500">
+                <p className="text-lg font-semibold text-gray-700">
+                  Select a chat
+                </p>
+                <p className="mt-2 text-sm">
+                  Choose a conversation from the list to start messaging.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

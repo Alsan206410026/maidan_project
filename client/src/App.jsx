@@ -52,7 +52,7 @@ import SuperAdminEditTournament from "./Backend/SuperAdmin/tournaments/SuperAdmi
 import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAdminDeleteTournament";
 
 // Chat
-import ChatList from "./Backend/SuperAdmin/chat/ChatList";
+import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
 
 function App() {
@@ -88,8 +88,9 @@ function App() {
         <Route path="/super-admin/tournaments/edit/:id" element={<SuperAdminEditTournament />} />
         <Route path="/super-admin/tournaments/delete/:id" element={<SuperAdminDeleteTournament />} />
 
-        <Route path="/super-admin/chat" element={<ChatList />} />
-        <Route path="/super-admin/chat/:userId" element={<SuperAdminChat />} />
+        <Route path="/super-admin/chat" element={<ChatLayout />}>
+          <Route path=":userId" element={<SuperAdminChat />} />
+        </Route>
       </Route>
 
       {/* User */}
