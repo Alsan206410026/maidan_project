@@ -17,7 +17,16 @@ function AdminChatLayout() {
         </div>
 
         <div className="col-span-8 xl:col-span-9">
-          <Outlet />
+          {userId ? (
+            <Outlet />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <h2 className="text-2xl font-semibold">Select a chat</h2>
+                <p className="text-sm text-gray-500">Choose a conversation from the list to start chatting.</p>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
