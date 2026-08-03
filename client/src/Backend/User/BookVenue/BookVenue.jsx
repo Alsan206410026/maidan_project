@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaSearch, FaMapMarkerAlt, FaStar } from "react-icons/fa";
 
 function BookVenue() {
+  const navigate = useNavigate();
   const [venues, setVenues] = useState([]);
   const [filteredVenues, setFilteredVenues] = useState([]);
 
@@ -19,6 +21,16 @@ function BookVenue() {
   useEffect(() => {
     filterVenues();
   }, [search, location, category, venues]);
+
+  const getCategoryName = (venue) => {
+    if (!venue?.category) return "Uncategorized";
+    if (typeof venue.category === "string") return venue.category;
+    return venue.category.name || "Uncategorized";
+  };
+
+  const getVenueImage = (venue) => {
+    return venue?.images || venue?.image || "https://placehold.co/600x400?text=Venue+Image";
+  };
 
   const fetchVenues = async () => {
     try {
@@ -44,14 +56,16 @@ function BookVenue() {
     }
 
     if (category) {
-      data = data.filter((venue) => venue.category === category);
+      data = data.filter(
+        (venue) => getCategoryName(venue).toLowerCase() === category.toLowerCase()
+      );
     }
 
     setFilteredVenues(data);
   };
 
   const handleBook = (venue) => {
-    alert(`Book ${venue.name}`);
+    navigate(`/booking/${venue._id}`);
   };
 
   return (
@@ -156,7 +170,7 @@ function BookVenue() {
             >
 
               <img
-                src={venue.image}
+                src={getVenueImage(venue)}
                 alt={venue.name}
                 className="h-56 w-full object-cover"
               />
@@ -196,7 +210,7 @@ function BookVenue() {
                 <div className="mt-5 flex flex-wrap gap-2">
 
                   <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-                    {venue.category}
+                    {getCategoryName(venue)}
                   </span>
 
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-sm">

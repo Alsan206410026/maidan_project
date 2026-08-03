@@ -109,7 +109,7 @@ function App() {
       <Route element={<UserSidebar />}>
         <Route path="/user-dashboard" element={<UserDashboard />} />
         <Route path="/user/book-venue" element={<BookVenue />} />
-        <Route path="/booking" element={<Booking />} />
+        <Route path="/booking/:id" element={<Booking />} />
         
       </Route>
 
