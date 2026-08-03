@@ -51,6 +51,11 @@ function AdminSidebar() {
       path: "/logout",
       icon: <FaSignOutAlt />,
     },
+    {
+      name: "Back to Home",
+      path: "/",
+      icon: <FaSignOutAlt />,
+    },
   ];
 
   return (
