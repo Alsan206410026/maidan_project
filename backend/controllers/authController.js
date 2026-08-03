@@ -496,6 +496,20 @@ const logoutUser = (req, res) => {
     });
 };
 
+
+const getMe = async (req, res) => {
+    try{
+        res.status(200).json({
+            user: req.user,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
+};
+
 //oauth authenticate
 //const authenticate = passport.authenticate("google", { scope: ["profile", "email"] });
 
@@ -528,5 +542,6 @@ module.exports = {
     verifyOtp,
     forgotPassword,
     resetPassword,
-    logoutUser
+    logoutUser,
+    getMe
 };
