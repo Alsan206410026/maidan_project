@@ -56,12 +56,8 @@ function SuperAdminSidebar() {
       name: "Logout",
       path: "/logout",
       icon: <FaSignOutAlt />,
-    },
-    {
-      name: "Back to Home",
-      path: "/",
-      icon: <FaSignOutAlt />,
-    },
+    }
+    
   ];
 
   return (
