@@ -104,7 +104,7 @@ function AdminDashboard() {
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
         <p className="mt-2 text-gray-500">
-          Welcome back! Here's today's venue overview.
+          Welcome back! This is today's venue overview.
         </p>
       </div>
 
