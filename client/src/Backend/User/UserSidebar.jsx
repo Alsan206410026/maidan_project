@@ -21,7 +21,7 @@ function UserSidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/user-dashboard", icon: <FaTachometerAlt /> },
     { name: "Book Venue", path: "/user/book-venue", icon: <FaFutbol /> },
-    { name: "View Tournaments", path: "/user/tournaments", icon: <FaTrophy /> },
+    
     { name: "Chat", path: "/user/chat", icon: <FaComments /> },
     { name: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
   ];

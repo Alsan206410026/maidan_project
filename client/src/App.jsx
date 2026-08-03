@@ -30,6 +30,10 @@ import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 import BookVenue from "./Backend/User/BookVenue/BookVenue";
 
+import UsersChat from "./Backend/User/Chat/UsersChat";
+import UsersChatList from "./Backend/User/Chat/UsersChatList";
+import UsersChatLayout from "./Backend/User/Chat/UsersChatLayout";
+
 // Super Admin
 import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
@@ -97,7 +101,20 @@ function App() {
       <Route element={<UserSidebar />}>
         <Route path="/user-dashboard" element={<UserDashboard />} />
         <Route path="/user/book-venue" element={<BookVenue />} />
+        
       </Route>
+
+      {/* User chat */}
+      <Route element={<UserSidebar />}>
+        <Route path="/user/chat" element={<UsersChatLayout />}>
+          <Route path=":ownerId" element={<UsersChat />} />
+        </Route>
+
+        <Route path="/users/chat" element={<UsersChatLayout />}>
+          <Route path=":ownerId" element={<UsersChat />} />
+        </Route>
+      </Route>
+
 
       {/* Admin */}
     <Route element={<AdminSidebar />}>
