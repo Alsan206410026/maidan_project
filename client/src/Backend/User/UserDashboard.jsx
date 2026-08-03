@@ -164,7 +164,7 @@ function UserDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-xl bg-white p-6 shadow-md">
+        <div className="rounded-xl flex flex-col justify-center bg-white p-6 shadow-md">
           <h2 className="mb-5 text-xl font-semibold">
             Quick Actions
           </h2>
