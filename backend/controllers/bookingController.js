@@ -3,7 +3,7 @@ const Venue = require("../model/Venue.js");
 const TimeSlot = require("../model/TimeSlot.js");
 const sendEmail = require("../utils/sendEmail.js");
 const Notification = require("../model/Notification.js");
-const sendNotification = require("../websocket/notificationHandler");
+// const sendNotification = require("../websocket/notificationHandler");
 
 // Get all bookings
 const getAllBookings = async (req, res) => {

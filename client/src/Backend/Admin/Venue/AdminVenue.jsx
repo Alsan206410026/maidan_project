@@ -281,70 +281,21 @@ function AdminVenue() {
 
             {/* Google Map */}
 
-            <div className="md:col-span-2">
+            
 
-              <label className="mb-2 block font-medium">
-                Google Map Link
-              </label>
+              
 
-              <input
-                type="text"
-                name="googleMap"
-                value={venue.googleMap}
-                onChange={handleChange}
-                placeholder="https://maps.google.com/..."
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              />
+              
 
-            </div>
+            
 
             {/* Opening Time */}
 
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Opening Time
-              </label>
-
-              <div className="relative">
-
-                <FaClock className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="time"
-                  name="openingTime"
-                  value={venue.openingTime}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border py-3 pl-11 pr-3 focus:border-green-500 focus:outline-none"
-                />
-
-              </div>
-
-            </div>
+            
 
             {/* Closing Time */}
 
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Closing Time
-              </label>
-
-              <div className="relative">
-
-                <FaClock className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="time"
-                  name="closingTime"
-                  value={venue.closingTime}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border py-3 pl-11 pr-3 focus:border-green-500 focus:outline-none"
-                />
-
-              </div>
-
-            </div>
+            
 
             {/* Price */}
 
@@ -490,51 +441,7 @@ function AdminVenue() {
         </div>
                 {/* ================= GALLERY ================= */}
 
-        <div className="rounded-xl bg-white p-6 shadow">
-
-          <h2 className="mb-6 text-xl font-semibold">
-            Venue Gallery
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-
-            {galleryImages.length > 0 ? (
-              galleryImages.map((image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`Gallery ${index}`}
-                  className="h-40 w-full rounded-lg object-cover shadow"
-                />
-              ))
-            ) : (
-              <div className="col-span-full flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100">
-                <p className="text-gray-500">
-                  No Gallery Images Added
-                </p>
-              </div>
-            )}
-
-          </div>
-
-          <label className="mt-6 inline-flex cursor-pointer items-center gap-3 rounded-lg bg-green-600 px-5 py-3 font-medium text-white transition hover:bg-green-700">
-
-            <FaUpload />
-
-            Upload Gallery Images
-
-            <input
-              type="file"
-              hidden
-              multiple
-              accept="image/*"
-              onChange={handleGalleryImages}
-            />
-
-          </label>
-
-        </div>
-
+        
         {/* ================= POLICIES ================= */}
 
         <div className="rounded-xl bg-white p-6 shadow">

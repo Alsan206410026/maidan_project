@@ -1,31 +1,93 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "./FrontendLayout/Layout";
 import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { isSubmitting },
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+  const emailValue = watch("email");
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("email");
+    const rememberedPassword = localStorage.getItem("password");
+    const rememberedRole = localStorage.getItem("role");
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (rememberMe && rememberedEmail && rememberedPassword) {
+      setValue("email", rememberedEmail);
+      setValue("password", rememberedPassword);
+      setValue("rememberMe", true);
+    }
+
+    if (!rememberMe && rememberedRole) {
+      setValue("email", sessionStorage.getItem("email") || "");
+    }
+  }, [setValue]);
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("email");
+    const rememberedPassword = localStorage.getItem("password");
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (rememberMe && rememberedEmail && rememberedPassword && emailValue === rememberedEmail) {
+      setValue("password", rememberedPassword);
+    }
+  }, [emailValue, setValue]);
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
+      const response = await axios.post(
+        "http://localhost:5001/api/auth/login",
+        data,
+        { withCredentials: true }
+      );
 
-      // Example API
-      // await axios.post("/api/login", data);
+      const role = response?.data?.role;
+      const rememberMe = Boolean(data.rememberMe);
+      const storage = rememberMe ? localStorage : sessionStorage;
+      const cleanupStorage = rememberMe ? sessionStorage : localStorage;
 
-      alert("Login successful!");
+      cleanupStorage.removeItem("role");
+      cleanupStorage.removeItem("email");
+      cleanupStorage.removeItem("password");
+      cleanupStorage.removeItem("rememberMe");
+
+      storage.setItem("role", role || "user");
+      storage.setItem("email", response?.data?.email || data.email);
+      storage.setItem("rememberMe", rememberMe ? "true" : "false");
+      if (rememberMe) {
+        storage.setItem("password", data.password);
+      } else {
+        storage.removeItem("password");
+      }
+
+      if (role === "super_admin") {
+        navigate("/super-admin-dashboard");
+      } else if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/user-dashboard");
+      }
 
       reset();
       setShowPassword(false);
     } catch (error) {
       console.error(error);
-      alert("Login failed.");
+      setErrorMessage(
+        error?.response?.data?.message || "Login failed. Please try again."
+      );
     }
   };
 
@@ -37,8 +99,15 @@ function Login() {
             Login
           </h1>
 
+          {errorMessage ? (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <form
             onSubmit={handleSubmit(onSubmit)}
+            autoComplete="on"
             className="space-y-6"
           >
             {/* email */}
@@ -48,8 +117,10 @@ function Login() {
               </label>
 
               <input
-                type="text"
+                name="email"
+                type="email"
                 placeholder="example@gmail.com"
+                autoComplete="username"
                 {...register("email")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
@@ -63,6 +134,7 @@ function Login() {
 
               <div className="relative">
                 <input
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="********"
                   autoComplete="current-password"
@@ -91,12 +163,12 @@ function Login() {
                 Remember Me
               </label>
 
-              <a
-                href="/forgot-password"
+              <Link
+                to="/forgot-password"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             {/* Login Button */}
@@ -107,27 +179,8 @@ function Login() {
             >
               {isSubmitting ? "Logging In..." : "Login"}
             </button>
-            {/* oauth */}
-            <div>
-              <p className="flex items-center justify-center gap-2 mb-2">or </p>
-
-              {/* oauth google login */}
-
-              <div className="flex justify-center gap-4" onClick={() => window.open("http://localhost:5001/api/auth/google", "_self")}>
-                <button
-                  type="button"
-                  aria-label="Continue with Google"
-                  className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5 w-full"
-                >
-                  <div className="flex items-center gap-6">
-                    <div><img src="/google.png" alt="Google" className="w-5 h-5" /></div>
-                    <div><p>Continue with Google</p></div>
-                  </div>
-                </button>
-
-              </div>
-
-            </div>
+            
+           
           </form>
         </div>
       </div>

@@ -44,10 +44,6 @@ function AdminChatList() {
     }
   ];
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div className="h-[calc(100vh-110px)] overflow-hidden rounded-2xl bg-white shadow-lg">
 
@@ -87,82 +83,44 @@ function AdminChatList() {
 
       <div className="h-[calc(100%-140px)] overflow-y-auto">
 
-        {filteredUsers.map((user)=>(
-
-          <NavLink
-            key={user._id}
-            to={`/admin/chat/${user._id}`}
-            className="block"
-          >
-
-            {({isActive})=>(
-              <div
-                className={`flex items-center gap-4 border-b p-4 transition
-                ${
-                  isActive
-                    ? "bg-green-100"
-                    : "hover:bg-green-50"
-                }`}
-              >
-
-                <div className="relative">
-
-                  <FaUserCircle className="text-5xl text-green-600"/>
-
-                  <FaCircle
-                    className={`absolute bottom-1 right-1 text-[10px]
-                    ${
-                      user.online
-                        ? "text-green-500"
-                        : "text-gray-400"
-                    }`}
-                  />
-
-                </div>
-
-                <div className="flex-1 overflow-hidden">
-
-                  <div className="flex items-center justify-between">
-
-                    <h3 className="font-semibold truncate">
-                      {user.name}
-                    </h3>
-
-                    {user.online && (
-                      <span className="text-xs text-green-600">
-                        Online
-                      </span>
-                    )}
-
+        {/* Show up to four users */}
+        {users && users.length > 0 ? (
+          users.slice(0, 4).map((user) => (
+            <NavLink key={user._id} to={`/admin/chat/${user._id}`} className="block">
+              {({ isActive }) => (
+                <div
+                  className={`flex items-center gap-4 border-b p-4 transition ${
+                    isActive ? "bg-green-100" : "hover:bg-green-50"
+                  }`}
+                >
+                  <div className="relative">
+                    <FaUserCircle className="text-5xl text-green-600" />
+                    <FaCircle
+                      className={`absolute bottom-1 right-1 text-[10px] ${
+                        user.online ? "text-green-500" : "text-gray-400"
+                      }`}
+                    />
                   </div>
 
-                  <p className="text-sm text-gray-500">
-                    {user.role}
-                  </p>
+                  <div className="flex-1 overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold truncate">{user.name}</h3>
+                      {user.online && <span className="text-xs text-green-600">Online</span>}
+                    </div>
 
-                  <p className="mt-1 truncate text-xs text-gray-400">
-                    {user.lastMessage}
-                  </p>
+                    <p className="text-sm text-gray-500">{user.role}</p>
 
+                    <p className="mt-1 truncate text-xs text-gray-400">{user.lastMessage}</p>
+                  </div>
                 </div>
-
-              </div>
-            )}
-
-          </NavLink>
-
-        ))}
-
-        {filteredUsers.length===0 && (
-
+              )}
+            </NavLink>
+          ))
+        ) : (
           <div className="p-10 text-center text-gray-500">
-
-            <FaUserCircle className="mx-auto mb-3 text-6xl text-gray-300"/>
-
+            <FaUserCircle className="mx-auto mb-3 text-6xl text-gray-300" />
             <p>No chats found.</p>
-
           </div>
-
         )}
 
       </div>

@@ -12,6 +12,9 @@ import Contact from "./Frontend/Contact";
 // Auth
 import Register from "./Register";
 import Login from "./Login";
+import RegisterAuthentication from "./RegisterAuthentication";
+import ForgotPassword from "./ForgotPassword";
+import Logout from "./Backend/Logout";
 
 // Admin
 import AdminSidebar from "./Backend/Admin/AdminSidebar";
@@ -59,6 +62,7 @@ import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
 
+
 function App() {
   return (
     <Routes>
@@ -67,6 +71,9 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/logout" element={<Logout />} />
+      <Route path="/verify-otp" element={<RegisterAuthentication />} />
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetails />} />
       <Route path="/tournaments" element={<Tournament />} />
@@ -122,9 +129,9 @@ function App() {
         <Route path="/admin/venue" element={<AdminVenue />} />
         <Route path="/admin/manage-bookings" element={<AdminManageVenueBooking />} />
 
-        <Route path="/admin/chat" element={<AdminChatList />} />
-        <Route path="/admin/chat/:userId" element={<AdminChatLayout />}>
-          <Route index element={<AdminChatWindow />} />
+        <Route path="/admin/chat" element={<AdminChatLayout />}>
+          <Route index element={<AdminChatList />} />
+          <Route path=":userId" element={<AdminChat />} />
         </Route>
       </Route>
 
