@@ -63,6 +63,9 @@ import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
 
+// Protected Route
+import ProtectedRoute from "./Backend/ProtectedRoute";
+
 
 function App() {
   return (
@@ -83,7 +86,10 @@ function App() {
       <Route path="/contact" element={<Contact />} />
 
       {/* Super Admin */}
-      <Route element={<SuperAdminSidebar />}>
+
+      //admin route backend protected
+      <Route element={<ProtectedRoute role="super-admin" />}>
+         <Route element={<SuperAdminSidebar />}>
         <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 
         <Route path="/super-admin/users" element={<SuperAdminManageUser />} />
@@ -104,6 +110,10 @@ function App() {
           <Route path=":userId" element={<SuperAdminChat />} />
         </Route>
       </Route>
+      </Route>
+
+
+     
 
       {/* User */}
       <Route element={<UserSidebar />}>
