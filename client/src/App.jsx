@@ -105,9 +105,9 @@ function App() {
         <Route path="/admin/venue" element={<AdminVenue />} />
         <Route path="/admin/manage-bookings" element={<AdminManageVenueBooking />} />
 
-        <Route path="/admin/chat" element={<AdminChatList />} />
-        <Route path="/admin/chat/:userId" element={<AdminChatLayout />}>
-          <Route index element={<AdminChatWindow />} />
+        <Route path="/admin/chat" element={<AdminChatLayout />}>
+          <Route index element={<AdminChatList />} />
+          <Route path=":userId" element={<AdminChat />} />
         </Route>
       </Route>
 
