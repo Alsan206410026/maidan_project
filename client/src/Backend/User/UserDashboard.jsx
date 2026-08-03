@@ -178,13 +178,6 @@ function UserDashboard() {
             </NavLink>
 
             <NavLink
-              to="/user/tournaments"
-              className="block rounded-lg bg-blue-600 py-3 text-center font-medium text-white transition hover:bg-blue-700"
-            >
-              View Tournaments
-            </NavLink>
-
-            <NavLink
               to="/user/chat"
               className="block rounded-lg bg-purple-600 py-3 text-center font-medium text-white transition hover:bg-purple-700"
             >
