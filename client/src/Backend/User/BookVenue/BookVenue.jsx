@@ -5,7 +5,6 @@ import { FaSearch, FaMapMarkerAlt, FaStar } from "react-icons/fa";
 function BookVenue() {
   const [venues, setVenues] = useState([]);
   const [filteredVenues, setFilteredVenues] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
@@ -24,15 +23,10 @@ function BookVenue() {
   const fetchVenues = async () => {
     try {
       const res = await axios.get("http://localhost:5001/api/venue");
-      const venueList = Array.isArray(res.data) ? res.data : [];
-      setVenues(venueList);
-      setFilteredVenues(venueList);
+      setVenues(res.data);
+      setFilteredVenues(res.data);
     } catch (err) {
       console.log(err);
-      setVenues([]);
-      setFilteredVenues([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -46,15 +40,11 @@ function BookVenue() {
     }
 
     if (location) {
-      data = data.filter(
-        (venue) => venue.location?.toLowerCase() === location.toLowerCase()
-      );
+      data = data.filter((venue) => venue.location === location);
     }
 
     if (category) {
-      data = data.filter(
-        (venue) => venue.category?.name?.toLowerCase() === category.toLowerCase()
-      );
+      data = data.filter((venue) => venue.category === category);
     }
 
     setFilteredVenues(data);
@@ -156,17 +146,7 @@ function BookVenue() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-        {isLoading ? (
-          <div className="col-span-full rounded-xl bg-white p-12 text-center shadow-md">
-            <h2 className="text-xl font-semibold text-gray-700">
-              Loading venues...
-            </h2>
-
-            <p className="mt-2 text-gray-500">
-              Please wait while we fetch the latest venues.
-            </p>
-          </div>
-        ) : filteredVenues.length > 0 ? (
+        {filteredVenues.length > 0 ? (
 
           filteredVenues.map((venue) => (
 
@@ -176,7 +156,7 @@ function BookVenue() {
             >
 
               <img
-                src={venue.images || venue.image}
+                src={venue.image}
                 alt={venue.name}
                 className="h-56 w-full object-cover"
               />
@@ -216,7 +196,7 @@ function BookVenue() {
                 <div className="mt-5 flex flex-wrap gap-2">
 
                   <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-                    {venue.category?.name || venue.category || "Category"}
+                    {venue.category}
                   </span>
 
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-sm">
