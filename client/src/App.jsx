@@ -14,6 +14,7 @@ import Register from "./Register";
 import Login from "./Login";
 import RegisterAuthentication from "./RegisterAuthentication";
 import ForgotPassword from "./ForgotPassword";
+import Logout from "./Backend/Logout";
 
 // Admin
 import AdminSidebar from "./Backend/Admin/AdminSidebar";
@@ -67,6 +68,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/logout" element={<Logout />} />
       <Route path="/verify-otp" element={<RegisterAuthentication />} />
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetails />} />
