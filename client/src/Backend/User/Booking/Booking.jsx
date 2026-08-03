@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import {
   FaMapMarkerAlt,
   FaCalendarAlt,
@@ -8,13 +9,71 @@ import {
 } from "react-icons/fa";
 
 function Booking() {
-  const { state } = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
 
-  const venue = state?.venue;
-
+  const [venue, setVenue] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+
+  useEffect(() => {
+    const fetchVenue = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await axios.get(`http://localhost:5001/api/venue/${id}`);
+        setVenue(res.data);
+      } catch (err) {
+        console.error(err);
+        setVenue(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenue();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      if (!id) return;
+
+      try {
+        const res = await axios.get(`http://localhost:5001/api/timeslot/search?venue=${id}`);
+        setTimeSlots(res.data || []);
+      } catch (err) {
+        console.error(err);
+        setTimeSlots([]);
+      }
+    };
+
+    fetchTimeSlots();
+  }, [id]);
+
+  const getDayName = (value) => {
+    if (!value) return "";
+    const dateObj = new Date(value);
+    return dateObj.toLocaleDateString("en-US", { weekday: "long" });
+  };
+
+  const availableTimeSlots = date
+    ? timeSlots.filter((slot) => slot.day === getDayName(date) && slot.status === "Active")
+    : timeSlots.filter((slot) => slot.status === "Active");
+
+  const selectedSlot = availableTimeSlots.find((slot) => slot._id === time);
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center">
+        <h1 className="text-2xl font-bold">Loading venue...</h1>
+      </div>
+    );
+  }
 
   if (!venue) {
     return (
@@ -40,7 +99,7 @@ function Booking() {
     }
 
     alert(
-      `Booking Confirmed!\n\nVenue: ${venue.name}\nDate: ${date}\nTime: ${time}`
+      `Booking Confirmed!\n\nVenue: ${venue.name}\nDate: ${date}\nTime: ${selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : time}`
     );
   };
 
@@ -91,7 +150,10 @@ function Booking() {
                 type="date"
                 className="w-full rounded-lg border p-3 focus:ring-2 focus:ring-green-500 outline-none"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setTime("");
+                }}
               />
 
             </div>
@@ -103,12 +165,25 @@ function Booking() {
                 Select Time
               </label>
 
-              <input
-                type="time"
+              <select
                 className="w-full rounded-lg border p-3 focus:ring-2 focus:ring-green-500 outline-none"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-              />
+                disabled={!date}
+              >
+                <option value="">
+                  {date
+                    ? availableTimeSlots.length > 0
+                      ? "Select admin time"
+                      : "No admin time slots available"
+                    : "Select a date first"}
+                </option>
+                {availableTimeSlots.map((slot) => (
+                  <option key={slot._id} value={slot._id}>
+                    {slot.startTime} - {slot.endTime}
+                  </option>
+                ))}
+              </select>
 
             </div>
 
@@ -134,7 +209,7 @@ function Booking() {
 
               <div className="flex justify-between">
                 <span>Time</span>
-                <span>{time || "--"}</span>
+                <span>{selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : time || "--"}</span>
               </div>
 
               <div className="flex justify-between">
