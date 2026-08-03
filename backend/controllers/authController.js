@@ -461,11 +461,36 @@ const getUsers = async (req, res) => {
 
 //logout user
 const logoutUser = (req, res) => {
-    res.clearCookie("token", {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-    });
+    const clearAuthCookies = () => {
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+        });
+
+        res.clearCookie("connect.sid", {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+        });
+    };
+
+    if (req.session) {
+        req.session.destroy((error) => {
+            clearAuthCookies();
+
+            if (error) {
+                console.log(error);
+            }
+
+            return res.status(200).json({
+                message: "Logged out successfully",
+            });
+        });
+        return;
+    }
+
+    clearAuthCookies();
     return res.status(200).json({
         message: "Logged out successfully",
     });

@@ -37,9 +37,9 @@ function ForgotPassword() {
       reset({ email: data.email });
     } catch (error) {
       console.error("Forgot password request failed:", error);
-      setMessage(
-        error?.response?.data?.message || "Unable to send OTP. Please try again."
-      );
+      const errorText =
+        error?.response?.data?.message || "Unable to send OTP. Please try again.";
+      setMessage(errorText);
     }
   };
 
@@ -67,9 +67,9 @@ function ForgotPassword() {
       navigate("/login");
     } catch (error) {
       console.error("Reset password failed:", error);
-      setMessage(
-        error?.response?.data?.message || "Unable to reset password. Please try again."
-      );
+      const errorText =
+        error?.response?.data?.message || "Unable to reset password. Please try again.";
+      setMessage(errorText);
     }
   };
 

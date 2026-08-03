@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "./FrontendLayout/Layout";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,12 +9,42 @@ function Login() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { isSubmitting },
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const emailValue = watch("email");
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("email");
+    const rememberedPassword = localStorage.getItem("password");
+    const rememberedRole = localStorage.getItem("role");
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (rememberMe && rememberedEmail && rememberedPassword) {
+      setValue("email", rememberedEmail);
+      setValue("password", rememberedPassword);
+      setValue("rememberMe", true);
+    }
+
+    if (!rememberMe && rememberedRole) {
+      setValue("email", sessionStorage.getItem("email") || "");
+    }
+  }, [setValue]);
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("email");
+    const rememberedPassword = localStorage.getItem("password");
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (rememberMe && rememberedEmail && rememberedPassword && emailValue === rememberedEmail) {
+      setValue("password", rememberedPassword);
+    }
+  }, [emailValue, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -31,11 +61,17 @@ function Login() {
 
       cleanupStorage.removeItem("role");
       cleanupStorage.removeItem("email");
+      cleanupStorage.removeItem("password");
       cleanupStorage.removeItem("rememberMe");
 
       storage.setItem("role", role || "user");
       storage.setItem("email", response?.data?.email || data.email);
       storage.setItem("rememberMe", rememberMe ? "true" : "false");
+      if (rememberMe) {
+        storage.setItem("password", data.password);
+      } else {
+        storage.removeItem("password");
+      }
 
       if (role === "super_admin") {
         navigate("/super-admin-dashboard");
@@ -71,6 +107,7 @@ function Login() {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
+            autoComplete="on"
             className="space-y-6"
           >
             {/* email */}
@@ -80,8 +117,10 @@ function Login() {
               </label>
 
               <input
+                name="email"
                 type="email"
                 placeholder="example@gmail.com"
+                autoComplete="username"
                 {...register("email")}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
@@ -95,6 +134,7 @@ function Login() {
 
               <div className="relative">
                 <input
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="********"
                   autoComplete="current-password"
