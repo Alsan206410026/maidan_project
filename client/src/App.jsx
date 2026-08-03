@@ -12,6 +12,8 @@ import Contact from "./Frontend/Contact";
 // Auth
 import Register from "./Register";
 import Login from "./Login";
+import RegisterAuthentication from "./RegisterAuthentication";
+import ForgotPassword from "./ForgotPassword";
 
 // Admin
 import AdminSidebar from "./Backend/Admin/AdminSidebar";
@@ -55,6 +57,7 @@ import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
 
+
 function App() {
   return (
     <Routes>
@@ -63,6 +66,8 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-otp" element={<RegisterAuthentication />} />
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetails />} />
       <Route path="/tournaments" element={<Tournament />} />

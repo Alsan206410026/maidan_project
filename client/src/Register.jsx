@@ -1,35 +1,44 @@
 import React, { useState } from "react";
 import Layout from "./FrontendLayout/Layout";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Register() {
   const {
     register,
     handleSubmit,
     reset,
-    getValues,
     formState: { isSubmitting },
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    const email = getValues("email");
-
-    if (!email) {
+    if (!data.email) {
       alert("Please enter your email first.");
       return;
     }
 
-    console.log(data);
+    try {
+      await axios.post("http://localhost:5001/api/auth/register", data, {
+        withCredentials: true,
+      });
 
-    // await axios.post("/api/register", data);
-
-    alert("Account created successfully!");
-    reset();
-    setOtpSent(false);
+      sessionStorage.setItem("email", data.email);
+      reset();
+      setOtpSent(false);
+      navigate("/verify-otp");
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert(
+        error?.response?.data?.message ||
+          "An error occurred during registration. Please try again."
+      );
+    }
   };
 
   return (
@@ -116,7 +125,7 @@ function Register() {
                   type="tel"
                   placeholder="98XXXXXXXX"
                   autoComplete="tel"
-                  {...register("phone")}
+                  {...register("phoneNumber")}
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </div>
@@ -198,24 +207,7 @@ function Register() {
               {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
 
-            <div className="flex items-center justify-center gap-2">
-              <p>or</p>
-            </div>
-
-            {/* oauth google registration */}
-            <div className="flex justify-center gap-4 " onClick={() => window.open("http://localhost:5001/auth/google", "_self")}>
-              <button
-                type="button"
-                aria-label="Continue with Google"
-                className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white  font-semibold text-gray-700 transition hover:bg-gray-100 px-5 py-5 w-full"
-              >
-                <div className="flex items-center gap-6">
-                  <div><img src="/google.png" alt="Google" className="w-5 h-5" /></div>
-                  <div><p>Continue with Google</p></div>
-                </div>
-              </button>
-
-            </div>
+           
 
           </form>
         </div>

@@ -12,11 +12,10 @@ const sessionMiddleware = require("./middleware/sessionmiddleware");
 connectDB();
 
 const app = express();
-const server = http.createServer(app);
+
 
 // WebSocket
-const initializeWebSocket = require("./websocket/websocket");
-initializeWebSocket(server);
+
 
 // Middleware
 app.use(bodyParser.json());
@@ -48,6 +47,6 @@ app.use("/api/timeslot", require("./routes/timeSlotRoutes"));
 
 const PORT = process.env.PORT || 5001;
 
-server.listen(PORT, () => {
-    console.log(`HTTP + WebSocket running on ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
 });
