@@ -32,6 +32,7 @@ import AdminChatWindow from "./Backend/Admin/Chat/AdminChatWindow";
 import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 import BookVenue from "./Backend/User/BookVenue/BookVenue";
+import Booking from "./Backend/User/Booking/Booking";
 
 import UsersChat from "./Backend/User/Chat/UsersChat";
 import UsersChatList from "./Backend/User/Chat/UsersChatList";
@@ -108,6 +109,7 @@ function App() {
       <Route element={<UserSidebar />}>
         <Route path="/user-dashboard" element={<UserDashboard />} />
         <Route path="/user/book-venue" element={<BookVenue />} />
+        <Route path="/booking" element={<Booking />} />
         
       </Route>
 
