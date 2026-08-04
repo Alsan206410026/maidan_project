@@ -10,7 +10,7 @@ function ProtectedRoute({ role }) {
     const checkUser = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5002/api/auth/me",
+          "http://localhost:5001/api/auth/me",
           {
             withCredentials: true,
           }

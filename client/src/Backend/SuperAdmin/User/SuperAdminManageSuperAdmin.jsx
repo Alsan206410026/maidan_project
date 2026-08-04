@@ -3,11 +3,11 @@ import { FaEdit, FaTrash, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function SuperAdminManageUser() {
-    const [users, setUsers] = useState([]);
+function SuperAdminManageSuperAdmin() {
+    const [superAdmins, setSuperAdmins] = useState([]);
     const navigate = useNavigate();
 
-    const fetchUsers = async () => {
+    const fetchSuperAdmins = async () => {
         try {
             const response = await axios.get(
                 "http://localhost:5001/api/auth/users",
@@ -16,23 +16,23 @@ function SuperAdminManageUser() {
                 }
             );
 
-            const filteredUsers = response.data.filter(
-                (user) => user.role === "user"
+            const filteredSuperAdmins = response.data.filter(
+                (user) => user.role === "super_admin"
             );
 
-            setUsers(filteredUsers);
+            setSuperAdmins(filteredSuperAdmins);
         } catch (error) {
             console.log(error);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
+        fetchSuperAdmins();
     }, []);
 
     const handleDelete = async (id) => {
         const confirmDelete = window.confirm(
-            "Are you sure you want to delete this user?"
+            "Are you sure you want to delete this super admin?"
         );
 
         if (!confirmDelete) return;
@@ -45,7 +45,7 @@ function SuperAdminManageUser() {
                 }
             );
 
-            fetchUsers();
+            fetchSuperAdmins();
         } catch (error) {
             console.log(error);
         }
@@ -55,7 +55,7 @@ function SuperAdminManageUser() {
         <div>
             <div className="flex items-center gap-3 mb-6">
                 <FaUser className="text-2xl" />
-                <h1 className="text-2xl font-bold">Manage Users</h1>
+                <h1 className="text-2xl font-bold">Manage Super Admins</h1>
             </div>
 
             <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -72,33 +72,31 @@ function SuperAdminManageUser() {
                     </thead>
 
                     <tbody>
-                        {users.map((user) => (
-                            <tr key={user._id} className="border-t">
-                                <td className="p-3">{user.fullName}</td>
-                                <td className="p-3">{user.email}</td>
-                                <td className="p-3">{user.phoneNumber}</td>
-                                <td className="p-3 capitalize">{user.role}</td>
+                        {superAdmins.map((superAdmin) => (
+                            <tr key={superAdmin._id} className="border-t">
+                                <td className="p-3">{superAdmin.fullName}</td>
+                                <td className="p-3">{superAdmin.email}</td>
+                                <td className="p-3">{superAdmin.phoneNumber}</td>
+                                <td className="p-3 capitalize">{superAdmin.role}</td>
 
                                 <td className="p-3">
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm ${
-                                            user.status === "active"
+                                            superAdmin.status === "active"
                                                 ? "bg-green-100 text-green-700"
-                                                : user.status === "suspended"
+                                                : superAdmin.status === "suspended"
                                                 ? "bg-red-100 text-red-700"
                                                 : "bg-yellow-100 text-yellow-700"
                                         }`}
                                     >
-                                        {user.status}
+                                        {superAdmin.status}
                                     </span>
                                 </td>
 
                                 <td className="p-3 flex gap-3">
                                     <button
                                         onClick={() =>
-                                            navigate(
-                                                `/super-admin/users/edit/${user._id}`
-                                            )
+                                            navigate(`/super-admin/users/edit/${superAdmin._id}`)
                                         }
                                         className="text-blue-600"
                                     >
@@ -106,7 +104,7 @@ function SuperAdminManageUser() {
                                     </button>
 
                                     <button
-                                        onClick={() => handleDelete(user._id)}
+                                        onClick={() => handleDelete(superAdmin._id)}
                                         className="text-red-600"
                                     >
                                         <FaTrash />
@@ -121,4 +119,4 @@ function SuperAdminManageUser() {
     );
 }
 
-export default SuperAdminManageUser;
+export default SuperAdminManageSuperAdmin;
