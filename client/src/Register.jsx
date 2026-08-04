@@ -13,13 +13,16 @@ function Register() {
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
+    setLoading(true);
     if (!data.email) {
       alert("Please enter your email first.");
+      setLoading(false);
       return;
     }
 
@@ -36,8 +39,11 @@ function Register() {
       console.error("Error during registration:", error);
       alert(
         error?.response?.data?.message ||
-          "An error occurred during registration. Please try again."
+        "An error occurred during registration. Please try again."
       );
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -201,18 +207,20 @@ function Register() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
+              disabled={loading}
+
             >
-              {isSubmitting ? "Creating Account..." : "Create Account"}
+              {loading ? <span className="loading loading-spinner"></span> : "Create Account"}
             </button>
-
-           
-
           </form>
-        </div>
+
+
+
+       
       </div>
-    </Layout>
+    </div>
+    </Layout >
   );
 }
 
