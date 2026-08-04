@@ -15,6 +15,7 @@ function Login() {
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const emailValue = watch("email");
@@ -47,6 +48,7 @@ function Login() {
   }, [emailValue, setValue]);
 
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:5001/api/auth/login",
@@ -88,6 +90,9 @@ function Login() {
       setErrorMessage(
         error?.response?.data?.message || "Login failed. Please try again."
       );
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -174,10 +179,10 @@ function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loading}
               className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
-              {isSubmitting ? "Logging In..." : "Login"}
+              {loading ? <span className="loading loading-spinner"></span> : "Login"}
             </button>
             
            
