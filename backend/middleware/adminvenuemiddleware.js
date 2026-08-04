@@ -3,27 +3,26 @@ const Venue = require("../model/Venue.js");
 const venueAdminMiddleware = async (req, res, next) => {
     try {
 
-        // User must be logged in
         if (!req.user) {
             return res.status(401).json({
                 message: "Unauthorized",
             });
         }
 
-        // Check if the user is an admin
-        if (!req.user || req.user.role !== "admin") {
+        // Allow Super Admin immediately
+        if (req.user.role === "super_admin") {
+            return next();
+        }
+
+        // Only admins continue
+        if (req.user.role !== "admin") {
             return res.status(403).json({
                 message: "Access denied",
             });
         }
 
-        // Super admin can edit any venue
-        if (req.user.role === "super_admin") {
-            return next();
-        }
-
-        // Get the venue being updated
         const venueId = req.params.id || req.body.venue;
+
         const venue = await Venue.findById(venueId);
 
         if (!venue) {
@@ -32,7 +31,6 @@ const venueAdminMiddleware = async (req, res, next) => {
             });
         }
 
-        // Check whether this admin owns the venue
         if (venue.admin.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 message: "You are not the admin of this venue.",
