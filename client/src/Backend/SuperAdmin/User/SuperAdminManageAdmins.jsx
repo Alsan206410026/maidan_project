@@ -3,11 +3,11 @@ import { FaEdit, FaTrash, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function SuperAdminManageUser() {
-    const [users, setUsers] = useState([]);
+function SuperAdminManageAdmins() {
+    const [admins, setAdmins] = useState([]);
     const navigate = useNavigate();
 
-    const fetchUsers = async () => {
+    const fetchAdmins = async () => {
         try {
             const response = await axios.get(
                 "http://localhost:5001/api/auth/users",
@@ -16,23 +16,23 @@ function SuperAdminManageUser() {
                 }
             );
 
-            const filteredUsers = response.data.filter(
-                (user) => user.role === "user"
+            const filteredAdmins = response.data.filter(
+                (user) => user.role === "admin"
             );
 
-            setUsers(filteredUsers);
+            setAdmins(filteredAdmins);
         } catch (error) {
             console.log(error);
         }
     };
 
     useEffect(() => {
-        fetchUsers();
+        fetchAdmins();
     }, []);
 
     const handleDelete = async (id) => {
         const confirmDelete = window.confirm(
-            "Are you sure you want to delete this user?"
+            "Are you sure you want to delete this admin?"
         );
 
         if (!confirmDelete) return;
@@ -45,7 +45,7 @@ function SuperAdminManageUser() {
                 }
             );
 
-            fetchUsers();
+            fetchAdmins();
         } catch (error) {
             console.log(error);
         }
@@ -55,7 +55,7 @@ function SuperAdminManageUser() {
         <div>
             <div className="flex items-center gap-3 mb-6">
                 <FaUser className="text-2xl" />
-                <h1 className="text-2xl font-bold">Manage Users</h1>
+                <h1 className="text-2xl font-bold">Manage Admins</h1>
             </div>
 
             <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -72,33 +72,31 @@ function SuperAdminManageUser() {
                     </thead>
 
                     <tbody>
-                        {users.map((user) => (
-                            <tr key={user._id} className="border-t">
-                                <td className="p-3">{user.fullName}</td>
-                                <td className="p-3">{user.email}</td>
-                                <td className="p-3">{user.phoneNumber}</td>
-                                <td className="p-3 capitalize">{user.role}</td>
+                        {admins.map((admin) => (
+                            <tr key={admin._id} className="border-t">
+                                <td className="p-3">{admin.fullName}</td>
+                                <td className="p-3">{admin.email}</td>
+                                <td className="p-3">{admin.phoneNumber}</td>
+                                <td className="p-3 capitalize">{admin.role}</td>
 
                                 <td className="p-3">
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm ${
-                                            user.status === "active"
+                                            admin.status === "active"
                                                 ? "bg-green-100 text-green-700"
-                                                : user.status === "suspended"
+                                                : admin.status === "suspended"
                                                 ? "bg-red-100 text-red-700"
                                                 : "bg-yellow-100 text-yellow-700"
                                         }`}
                                     >
-                                        {user.status}
+                                        {admin.status}
                                     </span>
                                 </td>
 
                                 <td className="p-3 flex gap-3">
                                     <button
                                         onClick={() =>
-                                            navigate(
-                                                `/super-admin/users/edit/${user._id}`
-                                            )
+                                            navigate(`/super-admin/users/edit/${admin._id}`)
                                         }
                                         className="text-blue-600"
                                     >
@@ -106,7 +104,7 @@ function SuperAdminManageUser() {
                                     </button>
 
                                     <button
-                                        onClick={() => handleDelete(user._id)}
+                                        onClick={() => handleDelete(admin._id)}
                                         className="text-red-600"
                                     >
                                         <FaTrash />
@@ -121,4 +119,4 @@ function SuperAdminManageUser() {
     );
 }
 
-export default SuperAdminManageUser;
+export default SuperAdminManageAdmins;

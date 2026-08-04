@@ -1,13 +1,12 @@
-// useGetUsersForSidebar.js
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const useGetUsersForSidebar = () => {
+const useGetAdminsForSidebar = () => {
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState([]);
+  const [admins, setAdmins] = useState([]);
 
   useEffect(() => {
-    const getUsers = async () => {
+    const getAdmins = async () => {
       setLoading(true);
 
       try {
@@ -18,18 +17,18 @@ const useGetUsersForSidebar = () => {
           }
         );
 
-        setUsers(res.data.data);
+        setAdmins(res.data.data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching admins:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    getUsers();
+    getAdmins();
   }, []);
 
-  return { loading, users };
+  return { loading, admins };
 };
 
-export default useGetUsersForSidebar;
+export default useGetAdminsForSidebar;
