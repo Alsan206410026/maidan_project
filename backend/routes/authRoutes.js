@@ -12,8 +12,8 @@ router.post("/login",loginLimiter, loginUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/logout", logoutUser);
-// router.get("/users", protect, superAdmin, getUsers);
-router.get("/users",  getUsers);
+router.get("/users", protect, superAdmin, getUsers);
+
 //verify otp
 router.post("/verify-otp", verifyOtp);
 
