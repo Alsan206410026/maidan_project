@@ -119,8 +119,34 @@ const createVenue = async (req, res) => {
 };
 
 // Update a venue
-const updateVenue = async (req, res) => {
-    const { name, slug, description, category, price, status, location, admin } = req.body;
+    const updateVenue = async (req, res) => {
+        const { name, slug, description, category, price, status, location, admin } = req.body;
+        const venue = await Venue.findById(req.params.id);
+        if(venue){
+            venue.name = name || venue.name;
+            venue.slug = slug || venue.slug;
+            venue.description = description || venue.description;
+            venue.category = category || venue.category;
+            venue.price = price || venue.price;
+            venue.status = status || venue.status;
+            venue.location = location || venue.location;
+            venue.admin = admin || venue.admin; // Update the admin to the provided value if given
+            if (req.file) {
+                const result = await cloudinary.uploader.upload(req.file.path);
+                venue.images = result.secure_url; // Update the image URL in the database
+            }
+            await venue.save();
+            return res.status(200).json(venue);
+        }
+        return res.status(404).json({
+            message: "Venue not found",
+        });
+    };
+
+
+// Update a venue by admin
+const updateVenueByAdmin = async (req, res) => {
+    const { name, slug, description, category, price, status, location } = req.body;
     const venue = await Venue.findById(req.params.id);
     if(venue){
         venue.name = name || venue.name;
@@ -130,7 +156,6 @@ const updateVenue = async (req, res) => {
         venue.price = price || venue.price;
         venue.status = status || venue.status;
         venue.location = location || venue.location;
-        venue.admin = admin || venue.admin; // Update the admin to the provided value if given
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path);
             venue.images = result.secure_url; // Update the image URL in the database
@@ -173,5 +198,6 @@ module.exports = {
     getVenueById,
     updateVenue,
     deleteVenue,
-    SearchVenues
+    SearchVenues,
+    updateVenueByAdmin
 };

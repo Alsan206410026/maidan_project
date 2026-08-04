@@ -33,7 +33,7 @@ import SuperAdminEditUser from "./Backend/SuperAdmin/User/SuperAdminEditUser";
 import SuperAdminManageVenue from "./Backend/SuperAdmin/venues/SuperAdminManageVenue";
 import SuperAdminAddVenue from "./Backend/SuperAdmin/venues/SuperAdminAddVenue";
 import SuperAdminEditVenue from "./Backend/SuperAdmin/venues/SuperAdminEditVenue";
-import SuperAdminDeleteVenue from "./Backend/SuperAdmin/venues/SuperAdminDeleteVenue";
+
 
 import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAdminManageTournament";
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
@@ -98,7 +98,6 @@ function App() {
           <Route path="/super-admin/venues" element={<SuperAdminManageVenue />} />
           <Route path="/super-admin/venues/add" element={<SuperAdminAddVenue />} />
           <Route path="/super-admin/venues/edit/:id" element={<SuperAdminEditVenue />} />
-          <Route path="/super-admin/venues/delete/:id" element={<SuperAdminDeleteVenue />} />
 
           {/* Tournament Management */}
           <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />
