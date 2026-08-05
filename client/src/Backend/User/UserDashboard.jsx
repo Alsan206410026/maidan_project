@@ -5,6 +5,7 @@ import {
   FaFutbol,
   FaTrophy,
   FaCalendarCheck,
+  FaClock,
 } from "react-icons/fa";
 
 function UserDashboard() {
@@ -17,6 +18,7 @@ function UserDashboard() {
   });
 
   const [tournaments, setTournaments] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
 
   useEffect(() => {
     fetchDashboard();
@@ -24,25 +26,56 @@ function UserDashboard() {
 
   const fetchDashboard = async () => {
     try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true, // Included for cookie-based auth support
+      };
+
+      // Fetch Venues, Tournaments, and User Bookings in parallel
       const [venueRes, tournamentRes, bookingRes] = await Promise.all([
-        axios.get("http://localhost:5001/api/venue"),
-        axios.get("http://localhost:5001/api/tournament"),
-        axios.get("http://localhost:5001/api/booking"),
+        axios.get("http://localhost:5001/api/venue", config).catch(() => ({ data: [] })),
+        axios.get("http://localhost:5001/api/tournament", config).catch(() => ({ data: [] })),
+        axios.get("http://localhost:5001/api/booking", config).catch(() => ({ data: [] })),
       ]);
 
+      // Normalize response shapes (handles both direct arrays and { data: [...] } formats)
+      const venuesList = Array.isArray(venueRes.data)
+        ? venueRes.data
+        : venueRes.data?.data || [];
+      const tournamentsList = Array.isArray(tournamentRes.data)
+        ? tournamentRes.data
+        : tournamentRes.data?.data || [];
+      const bookingsList = Array.isArray(bookingRes.data)
+        ? bookingRes.data
+        : bookingRes.data?.data || [];
+
+      // Update Statistics Counters
       setStats({
-        venues: venueRes.data.length,
-        tournaments: tournamentRes.data.length,
-        bookings: bookingRes.data.length,
+        venues: venuesList.length,
+        tournaments: tournamentsList.length,
+        bookings: bookingsList.length,
       });
 
+      // Populate Latest Tournaments (Max 5, sorted by latest)
       setTournaments(
-        [...tournamentRes.data]
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        [...tournamentsList]
+          .sort((a, b) => new Date(b.createdAt || b.startDate) - new Date(a.createdAt || a.startDate))
           .slice(0, 5)
       );
+
+      // Populate Recent Bookings for the Activity Feed (Max 3, sorted by latest)
+      setRecentBookings(
+        [...bookingsList]
+          .sort((a, b) => new Date(b.createdAt || b.bookingDate) - new Date(a.createdAt || a.bookingDate))
+          .slice(0, 3)
+      );
     } catch (err) {
-      console.log(err);
+      console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -111,60 +144,63 @@ function UserDashboard() {
 
       {/* Main Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
+        {/* Recent Activity (Dynamic Real Data) */}
         <div className="rounded-xl bg-white p-6 shadow-md lg:col-span-2">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Recent Activity</h2>
 
-            <button className="text-green-600 hover:text-green-700">
+            <NavLink
+              to="/user/my-bookings"
+              className="text-sm font-medium text-green-600 hover:text-green-700"
+            >
               View All
-            </button>
+            </NavLink>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-              <div>
-                <p className="font-medium">New tournament available</p>
-                <p className="text-sm text-gray-500">
-                  Register now and compete with other players.
-                </p>
-              </div>
+            {loading ? (
+              <p className="py-4 text-center text-gray-500">Loading activity...</p>
+            ) : recentBookings.length > 0 ? (
+              recentBookings.map((b) => (
+                <div
+                  key={b._id}
+                  className="flex items-center justify-between rounded-lg bg-gray-50 p-4 transition hover:bg-gray-100"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="rounded-full bg-green-100 p-2 text-green-600">
+                      <FaClock />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">
+                        {b.venue?.name ? `Booking at ${b.venue.name}` : "Venue Booking"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Date: {b.bookingDate} {b.slot ? `(${b.slot.startTime} - ${b.slot.endTime})` : ""}
+                      </p>
+                    </div>
+                  </div>
 
-              <span className="text-sm text-gray-400">
-                Today
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-              <div>
-                <p className="font-medium">Venue booking confirmed</p>
-                <p className="text-sm text-gray-500">
-                  Your booking has been successfully confirmed.
-                </p>
-              </div>
-
-              <span className="text-sm text-gray-400">
-                Yesterday
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
-              <div>
-                <p className="font-medium">Explore new venues</p>
-                <p className="text-sm text-gray-500">
-                  Discover sports venues near your location.
-                </p>
-              </div>
-
-              <span className="text-sm text-gray-400">
-                2 days ago
-              </span>
-            </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      b.bookingStatus === "Cancelled"
+                        ? "bg-red-100 text-red-700"
+                        : b.bookingStatus === "Booked" || b.bookingStatus === "Paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {b.bookingStatus || "Pending"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="py-4 text-center text-gray-500">No recent activity found.</p>
+            )}
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-xl flex flex-col justify-center bg-white p-6 shadow-md">
+        <div className="flex flex-col justify-center rounded-xl bg-white p-6 shadow-md">
           <h2 className="mb-5 text-xl font-semibold">
             Quick Actions
           </h2>
@@ -178,6 +214,13 @@ function UserDashboard() {
             </NavLink>
 
             <NavLink
+              to="/user/my-bookings"
+              className="block rounded-lg bg-green-600 py-3 text-center font-medium text-white transition hover:bg-green-700"
+            >
+              My Bookings
+            </NavLink>
+
+            <NavLink
               to="/user/chat"
               className="block rounded-lg bg-purple-600 py-3 text-center font-medium text-white transition hover:bg-purple-700"
             >
@@ -187,7 +230,7 @@ function UserDashboard() {
         </div>
       </div>
 
-      {/* Latest Tournaments */}
+      {/* Latest Tournaments (Dynamic Real Data) */}
       <div className="rounded-xl bg-white p-6 shadow-md">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-xl font-semibold">
@@ -195,7 +238,7 @@ function UserDashboard() {
           </h2>
 
           <NavLink
-            to="/user/tournaments"
+            to="/tournaments"
             className="text-sm font-medium text-green-600 hover:text-green-700"
           >
             View All
@@ -227,7 +270,7 @@ function UserDashboard() {
                     colSpan="3"
                     className="px-4 py-8 text-center text-gray-500"
                   >
-                    Loading...
+                    Loading tournaments...
                   </td>
                 </tr>
               ) : tournaments.length > 0 ? (
@@ -242,8 +285,7 @@ function UserDashboard() {
 
                     <td className="px-4 py-4 text-gray-600">
                       {tournament.venue?.name ||
-                        tournament.venue ||
-                        "-"}
+                        (typeof tournament.venue === "string" ? tournament.venue : "-")}
                     </td>
 
                     <td className="px-4 py-4">

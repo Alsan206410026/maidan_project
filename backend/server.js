@@ -55,7 +55,6 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/venue", require("./routes/venueRoutes"));
 app.use("/api/venuecategory", require("./routes/venueCategoryRoutes"));
-app.use("/api/chat", require("./routes/chatRoutes"));
 app.use("/api/tournament", require("./routes/tournamentRoutes"));
 app.use("/api/booking", require("./routes/bookingRoutes"));
 app.use("/api/timeslot", require("./routes/timeSlotRoutes"));

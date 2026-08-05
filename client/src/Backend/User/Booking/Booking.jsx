@@ -1,243 +1,177 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import axios from "axios";
-import {
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaClock,
-  FaMoneyBillWave,
-} from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaMoneyBillWave, FaArrowLeft } from "react-icons/fa";
 
 function Booking() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [venue, setVenue] = useState(null);
-  const [timeSlots, setTimeSlots] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+
+  const { register, handleSubmit } = useForm();
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const fetchVenue = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await axios.get(`http://localhost:5001/api/venue/${id}`);
-        setVenue(res.data);
-      } catch (err) {
-        console.error(err);
-        setVenue(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVenue();
+    fetchVenueDetailsAndSlots(today);
   }, [id]);
 
-  useEffect(() => {
-    const fetchTimeSlots = async () => {
-      if (!id) return;
+  const fetchVenueDetailsAndSlots = async (date) => {
+    try {
+      setLoading(true);
+      const [venueRes, slotRes] = await Promise.all([
+        axios.get(`http://localhost:5001/api/venue/${id}`, { withCredentials: true }),
+        axios.get(`http://localhost:5001/api/timeslot?venueId=${id}&date=${date}`, {
+          withCredentials: true,
+        }),
+      ]);
 
-      try {
-        const res = await axios.get(`http://localhost:5001/api/timeslot/search?venue=${id}`);
-        setTimeSlots(res.data || []);
-      } catch (err) {
-        console.error(err);
-        setTimeSlots([]);
-      }
-    };
-
-    fetchTimeSlots();
-  }, [id]);
-
-  const getDayName = (value) => {
-    if (!value) return "";
-    const dateObj = new Date(value);
-    return dateObj.toLocaleDateString("en-US", { weekday: "long" });
+      setVenue(venueRes.data?.data || venueRes.data);
+      setSlots(slotRes.data?.data || slotRes.data || []);
+      setSelectedSlot(null);
+    } catch (err) {
+      console.error("Failed to load booking details:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const availableTimeSlots = date
-    ? timeSlots.filter((slot) => slot.day === getDayName(date) && slot.status === "Active")
-    : timeSlots.filter((slot) => slot.status === "Active");
-
-  const selectedSlot = availableTimeSlots.find((slot) => slot._id === time);
-
-  if (loading) {
-    return (
-      <div className="p-10 text-center">
-        <h1 className="text-2xl font-bold">Loading venue...</h1>
-      </div>
-    );
-  }
-
-  if (!venue) {
-    return (
-      <div className="p-10 text-center">
-        <h1 className="text-2xl font-bold">
-          No Venue Selected
-        </h1>
-
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-5 rounded-lg bg-green-600 px-6 py-3 text-white"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  const confirmBooking = () => {
-    if (!date || !time) {
-      alert("Please select date and time.");
+  const onSubmit = async (data) => {
+    if (!selectedSlot) {
+      alert("Please choose an available time slot!");
       return;
     }
 
-    alert(
-      `Booking Confirmed!\n\nVenue: ${venue.name}\nDate: ${date}\nTime: ${selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : time}`
-    );
+  
+    const payload = {
+      venue: id,
+      slot: selectedSlot._id,
+      bookingDate: data.bookingDate || today,
+      paymentMethod: data.paymentMethod || "Cash",
+    };
+
+    if (payload.paymentMethod === "Cash") {
+      try {
+        await axios.post("http://localhost:5001/api/booking", payload, {
+          withCredentials: true,
+        });
+        alert("Booking submitted successfully!");
+        navigate("/user/my-bookings/pending");
+      } catch (err) {
+        alert(err.response?.data?.message || "Booking failed");
+      }
+    } else {
+      // For online payment redirect (eSewa), pass venue ID to calculate server-side signature
+      navigate("/user/esewa-payment", {
+        state: { bookingPayload: payload, venue },
+      });
+    }
   };
 
+  if (loading) {
+    return <div className="py-12 text-center text-gray-500">Loading booking form...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-5">
+    <div className="mx-auto max-w-3xl space-y-6 p-6">
+      <button
+        type="button"
+        onClick={() => navigate("/user/book-venue")}
+        className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-800"
+      >
+        <FaArrowLeft /> Back to Venues
+      </button>
 
-      <div className="mx-auto max-w-4xl rounded-xl bg-white shadow-lg overflow-hidden">
-
-        <img
-          src={venue.images || venue.image}
-          alt={venue.name}
-          className="h-72 w-full object-cover"
-        />
-
-        <div className="p-8">
-
-          <h1 className="text-3xl font-bold text-gray-800">
-            {venue.name}
-          </h1>
-
-          <div className="mt-3 flex items-center text-gray-500">
-            <FaMapMarkerAlt className="mr-2 text-green-600" />
-            {venue.location}
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-3">
-
-            <span className="rounded-full bg-green-100 px-4 py-2 text-green-700 font-semibold">
-              {venue.category?.name || venue.category}
-            </span>
-
-            <span className="rounded-full bg-blue-100 px-4 py-2 text-blue-700 font-semibold">
-              Rs. {venue.price}/hr
-            </span>
-
-          </div>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-
-            <div>
-
-              <label className="mb-2 flex items-center font-semibold text-gray-700">
-                <FaCalendarAlt className="mr-2 text-green-600" />
-                Select Date
-              </label>
-
-              <input
-                type="date"
-                className="w-full rounded-lg border p-3 focus:ring-2 focus:ring-green-500 outline-none"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setTime("");
-                }}
-              />
-
-            </div>
-
-            <div>
-
-              <label className="mb-2 flex items-center font-semibold text-gray-700">
-                <FaClock className="mr-2 text-green-600" />
-                Select Time
-              </label>
-
-              <select
-                className="w-full rounded-lg border p-3 focus:ring-2 focus:ring-green-500 outline-none"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                disabled={!date}
-              >
-                <option value="">
-                  {date
-                    ? availableTimeSlots.length > 0
-                      ? "Select admin time"
-                      : "No admin time slots available"
-                    : "Select a date first"}
-                </option>
-                {availableTimeSlots.map((slot) => (
-                  <option key={slot._id} value={slot._id}>
-                    {slot.startTime} - {slot.endTime}
-                  </option>
-                ))}
-              </select>
-
-            </div>
-
-          </div>
-
-          <div className="mt-10 rounded-lg bg-gray-50 p-5">
-
-            <h2 className="mb-4 text-xl font-bold text-gray-800">
-              Booking Summary
-            </h2>
-
-            <div className="space-y-3">
-
-              <div className="flex justify-between">
-                <span>Venue</span>
-                <span className="font-semibold">{venue.name}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Date</span>
-                <span>{date || "--"}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Time</span>
-                <span>{selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : time || "--"}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="flex items-center">
-                  <FaMoneyBillWave className="mr-2 text-green-600" />
-                  Price
-                </span>
-
-                <span className="font-bold text-green-600">
-                  Rs. {venue.price}
-                </span>
-              </div>
-
-            </div>
-
-          </div>
-
-          <button
-            onClick={confirmBooking}
-            className="mt-8 w-full rounded-lg bg-green-600 py-4 text-lg font-bold text-white hover:bg-green-700"
-          >
-            Confirm Booking
-          </button>
-
-        </div>
-
+      {/* Selected Venue Overview Header (Information fetched from Backend for display) */}
+      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-bold text-gray-800">{venue?.name}</h1>
+        <p className="mt-1 text-sm text-gray-500">{venue?.location}</p>
+        <p className="mt-2 text-xl font-bold text-green-600">Rs. {venue?.price} / hour</p>
       </div>
 
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        {/* Date Selector */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <FaCalendarAlt className="text-green-600" /> Select Date
+          </label>
+          <input
+            type="date"
+            defaultValue={today}
+            min={today}
+            {...register("bookingDate")}
+            onChange={(e) => fetchVenueDetailsAndSlots(e.target.value)}
+            className="w-full rounded-lg border p-3 outline-none focus:border-green-600"
+          />
+        </div>
+
+        {/* Slot Options */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <FaClock className="text-green-600" /> Choose Available Slot
+          </label>
+          {slots.length === 0 ? (
+            <p className="text-sm text-red-500">No slots available for this date.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {slots.map((slot) => (
+                <button
+                  key={slot._id}
+                  type="button"
+                  onClick={() => setSelectedSlot(slot)}
+                  className={`rounded-lg border p-3 text-sm font-medium transition ${
+                    selectedSlot?._id === slot._id
+                      ? "border-green-600 bg-green-100 text-green-800 font-bold"
+                      : "border-gray-200 hover:border-green-600"
+                  }`}
+                >
+                  {slot.startTime} - {slot.endTime}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Payment Radio Options */}
+        <div>
+          <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <FaMoneyBillWave className="text-green-600" /> Payment Type
+          </label>
+          <div className="flex gap-4">
+            <label className="flex flex-1 cursor-pointer items-center justify-center rounded-lg border p-3 font-medium transition [&:has(:checked)]:border-green-600 [&:has(:checked)]:bg-green-50">
+              <input
+                type="radio"
+                value="Cash"
+                defaultChecked
+                {...register("paymentMethod")}
+                className="mr-2"
+              />
+              Cash (Pay at Venue)
+            </label>
+
+            <label className="flex flex-1 cursor-pointer items-center justify-center rounded-lg border p-3 font-medium transition [&:has(:checked)]:border-green-600 [&:has(:checked)]:bg-green-50">
+              <input
+                type="radio"
+                value="eSewa"
+                {...register("paymentMethod")}
+                className="mr-2"
+              />
+              eSewa (Online)
+            </label>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-green-600 py-3 font-bold text-white transition hover:bg-green-700"
+        >
+          Confirm Booking
+        </button>
+      </form>
     </div>
   );
 }

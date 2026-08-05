@@ -5,33 +5,20 @@ const TimeSlotSchema = new mongoose.Schema(
     venue: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Venue",
-      required: true,
+      required: [true, "Venue ID is required"],
     },
-    day: {
-      type: String,
-      enum: [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ],
-      required: true,
-    },
+
     startTime: {
-      type: String, // e.g., "06:00" (24-hour format)
-      required: true,
+      type: String, 
+      required: [true, "Start time is required"],
     },
+
     endTime: {
-      type: String, // e.g., "07:00"
-      required: true,
+      type: String, 
+      required: [true, "End time is required"],
     },
-    price: {
-      type: Number,
-      required: true, // Slot-specific pricing (e.g., peak vs. off-peak hours)
-    },
+
+    // Master switch controlled by Venue Admin/Owner (e.g., ground maintenance)
     status: {
       type: String,
       enum: ["Active", "Inactive"],

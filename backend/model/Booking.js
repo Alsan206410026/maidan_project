@@ -5,50 +5,59 @@ const BookingSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: [true, "User reference is required"],
     },
+
     venue: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Venue",
-      required: true,
+      required: [true, "Venue reference is required"],
     },
+
     slot: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "TimeSlot",
-      required: true,
+      required: [true, "TimeSlot reference is required"],
     },
+
     bookingDate: {
-      type: String, // Stored in "YYYY-MM-DD" format for precise date queries
-      required: true,
+      type: String, // Format: "YYYY-MM-DD" from calendar
+      required: [true, "Booking date is required"],
     },
+
     totalAmount: {
       type: Number,
-      required: true,
+      required: [true, "Total amount is required"],
     },
+
     paymentMethod: {
       type: String,
       enum: ["eSewa", "Cash"],
-      default: "Cash",
+      required: [true, "Payment method is required"],
     },
+
     paymentStatus: {
       type: String,
-      enum: ["Pending", "Paid", "Refunded", "Failed"],
+      enum: ["Pending", "Paid", "Failed"],
       default: "Pending",
     },
+
     bookingStatus: {
       type: String,
-      enum: ["Pending", "Booked", "Paid", "Cancelled"],
-      default: "Pending", 
+      enum: ["Booked", "Paid", "Cancelled", "Pending"],
+      default: "Pending",
     },
+
     cancelledBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
-    cancellationReason: String,
-    transactionId: String,
   },
   { timestamps: true }
 );
 
+// High-performance composite index for checking available slots
+BookingSchema.index({ venue: 1, slot: 1, bookingDate: 1 });
 
 module.exports = mongoose.model("Booking", BookingSchema);
