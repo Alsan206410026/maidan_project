@@ -1,69 +1,54 @@
 const mongoose = require("mongoose");
 
 const BookingSchema = new mongoose.Schema(
-{
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-
-    venue:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Venue",
-        required:true
+    venue: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Venue",
+      required: true,
     },
-
-    slot:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"TimeSlot",
-        required:true
+    slot: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TimeSlot",
+      required: true,
     },
-
-    bookingDate:{
-        type:Date,
-        required:true
+    bookingDate: {
+      type: String, // Stored in "YYYY-MM-DD" format for precise date queries
+      required: true,
     },
-
-    totalAmount:Number,
-
-    paymentMethod:{
-        type:String,
-        enum:["eSewa","Cash"],
-        default:"eSewa"
+    totalAmount: {
+      type: Number,
+      required: true,
     },
-
-    paymentStatus:{
-        type:String,
-        enum:["Pending","Paid","Refunded","Failed"],
-        default:"Pending"
+    paymentMethod: {
+      type: String,
+      enum: ["eSewa", "Cash"],
+      default: "Cash",
     },
-
-    cancelledBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Refunded", "Failed"],
+      default: "Pending",
     },
-
-    cancellationReason:{
-        type:String
+    bookingStatus: {
+      type: String,
+      enum: ["Pending", "Booked", "Paid", "Cancelled"],
+      default: "Pending", 
     },
-
-    bookingStatus:{
-        type:String,
-        enum:[
-            "Pending",
-            "Confirmed",
-            "Cancelled",
-            "Completed"
-        ],
-        default:"Pending"
+    cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
+    cancellationReason: String,
+    transactionId: String,
+  },
+  { timestamps: true }
+);
 
-    transactionId:String
 
-},
-{
-    timestamps:true
-});
-
-module.exports = mongoose.model("Booking",BookingSchema);
+module.exports = mongoose.model("Booking", BookingSchema);
