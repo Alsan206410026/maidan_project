@@ -4,16 +4,11 @@ const { createBooking, getAllBookings, getBookingById, updateBooking, deleteBook
 const { protect } = require('../middleware/authmiddleware');
 const {venueAdminMiddleware} = require('../middleware/adminvenuemiddleware.js');
 
-router.route("/")
-    .get(protect, getAllBookings)
-    .post(protect, createBooking);
+// Booking routes
+router.route("/").get(protect, getAllBookings).post(protect, createBooking);
 
-router.route("/search")
-    .get(protect, searchBookings);
+router.route("/search").get(protect, searchBookings);
 
-router.route("/:id")
-    .get(protect, getBookingById)
-    .put(protect,venueAdminMiddleware, updateBooking)
-    .delete(protect,venueAdminMiddleware, deleteBooking);
+router.route("/:id").get(protect, getBookingById).put(protect,venueAdminMiddleware, updateBooking).delete(protect,venueAdminMiddleware, deleteBooking);
 
 module.exports = router;

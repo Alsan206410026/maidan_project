@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // Frontend
 import Home from "./Frontend/Home";
@@ -34,11 +34,13 @@ import SuperAdminManageVenue from "./Backend/SuperAdmin/venues/SuperAdminManageV
 import SuperAdminAddVenue from "./Backend/SuperAdmin/venues/SuperAdminAddVenue";
 import SuperAdminEditVenue from "./Backend/SuperAdmin/venues/SuperAdminEditVenue";
 
+import SuperAdminManageCategory from "./Backend/SuperAdmin/category/SuperAdminManageCategory";
+import SuperAdminAddCategory from "./Backend/SuperAdmin/category/SuperAdminAddCategory";
+import SuperAdminEditCategory from "./Backend/SuperAdmin/category/SuperAdminEditCategory";
 
 import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAdminManageTournament";
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
 import SuperAdminEditTournament from "./Backend/SuperAdmin/tournaments/SuperAdminEditTournament";
-import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAdminDeleteTournament";
 
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
@@ -57,8 +59,15 @@ import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 import BookVenue from "./Backend/User/BookVenue/BookVenue";
 import Booking from "./Backend/User/Booking/Booking";
+import EsewaPayment from "./Backend/User/Booking/EsewaPayment";
 import UsersChatLayout from "./Backend/User/Chat/UsersChatLayout";
 import UsersChat from "./Backend/User/Chat/UsersChat";
+
+// User MyBookings Modules
+import BookingsLayout from "./Backend/User/mybookings/BookingsLayout";
+import ActiveBookings from "./Backend/User/mybookings/ActiveBookings";
+import PendingPage from "./Backend/User/mybookings/PendingPage";
+import HistoryPage from "./Backend/User/mybookings/HistoryPage";
 
 function App() {
   return (
@@ -99,11 +108,16 @@ function App() {
           <Route path="/super-admin/venues/add" element={<SuperAdminAddVenue />} />
           <Route path="/super-admin/venues/edit/:id" element={<SuperAdminEditVenue />} />
 
+          {/* Venue Category Management */}
+          <Route path="/super-admin/venue-category" element={<SuperAdminManageCategory />} />
+          <Route path="/super-admin/venue-category/add" element={<SuperAdminAddCategory />} />
+          <Route path="/super-admin/venue-category/edit/:id" element={<SuperAdminEditCategory />} />
+
           {/* Tournament Management */}
           <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />
           <Route path="/super-admin/tournaments/add" element={<SuperAdminAddTournament />} />
           <Route path="/super-admin/tournaments/edit/:id" element={<SuperAdminEditTournament />} />
-          <Route path="/super-admin/tournaments/delete/:id" element={<SuperAdminDeleteTournament />} />
+          
 
           {/* Chat */}
           <Route path="/super-admin/chat" element={<ChatLayout />}>
@@ -136,6 +150,15 @@ function App() {
           <Route path="/user-dashboard" element={<UserDashboard />} />
           <Route path="/user/book-venue" element={<BookVenue />} />
           <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/user/esewa-payment" element={<EsewaPayment />} />
+
+          {/* User Bookings Management */}
+          <Route path="/user/my-bookings" element={<BookingsLayout />}>
+            <Route index element={<Navigate to="paid" replace />} />
+            <Route path="paid" element={<ActiveBookings />} />
+            <Route path="pending" element={<PendingPage />} />
+            <Route path="history" element={<HistoryPage />} />
+          </Route>
 
           <Route path="/user/chat" element={<UsersChatLayout />}>
             <Route path=":ownerId" element={<UsersChat />} />

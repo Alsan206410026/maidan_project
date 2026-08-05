@@ -13,17 +13,17 @@ const getVenueCategories = async (req, res) => {
     }
 };
 
-//get Venue Category by ID
+// get Venue Category by ID
 const getVenueCategoryById = async (req, res) => {
     const { id } = req.params;
     try {
-        const category = await category.findById(id);
-        if (!category) {
+        const venueCategory = await category.findById(id);
+        if (!venueCategory) {
             return res.status(404).json({
                 message: "Category not found",
             });
         }
-        return res.status(200).json(category);
+        return res.status(200).json(venueCategory);
     } catch (error) {
         console.error(error);
         return res.status(500).json({

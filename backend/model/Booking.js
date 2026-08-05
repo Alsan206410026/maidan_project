@@ -1,69 +1,63 @@
 const mongoose = require("mongoose");
 
 const BookingSchema = new mongoose.Schema(
-{
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User reference is required"],
     },
 
-    venue:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Venue",
-        required:true
+    venue: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Venue",
+      required: [true, "Venue reference is required"],
     },
 
-    slot:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"TimeSlot",
-        required:true
+    slot: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TimeSlot",
+      required: [true, "TimeSlot reference is required"],
     },
 
-    bookingDate:{
-        type:Date,
-        required:true
+    bookingDate: {
+      type: String, // Format: "YYYY-MM-DD" from calendar
+      required: [true, "Booking date is required"],
     },
 
-    totalAmount:Number,
-
-    paymentMethod:{
-        type:String,
-        enum:["eSewa","Cash"],
-        default:"eSewa"
+    totalAmount: {
+      type: Number,
+      required: [true, "Total amount is required"],
     },
 
-    paymentStatus:{
-        type:String,
-        enum:["Pending","Paid","Refunded","Failed"],
-        default:"Pending"
+    paymentMethod: {
+      type: String,
+      enum: ["eSewa", "Cash"],
+      required: [true, "Payment method is required"],
     },
 
-    cancelledBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
     },
 
-    cancellationReason:{
-        type:String
+    bookingStatus: {
+      type: String,
+      enum: ["Booked", "Paid", "Cancelled", "Pending"],
+      default: "Pending",
     },
 
-    bookingStatus:{
-        type:String,
-        enum:[
-            "Pending",
-            "Confirmed",
-            "Cancelled",
-            "Completed"
-        ],
-        default:"Pending"
+    cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
+  },
+  { timestamps: true }
+);
 
-    transactionId:String
+// High-performance composite index for checking available slots
+BookingSchema.index({ venue: 1, slot: 1, bookingDate: 1 });
 
-},
-{
-    timestamps:true
-});
-
-module.exports = mongoose.model("Booking",BookingSchema);
+module.exports = mongoose.model("Booking", BookingSchema);
