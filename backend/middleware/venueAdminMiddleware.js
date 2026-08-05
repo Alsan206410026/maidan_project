@@ -2,7 +2,6 @@ const Venue = require("../model/Venue.js");
 
 const venueAdminMiddleware = async (req, res, next) => {
     try {
-
         if (!req.user) {
             return res.status(401).json({
                 message: "Unauthorized",
@@ -21,9 +20,7 @@ const venueAdminMiddleware = async (req, res, next) => {
             });
         }
 
-        const venueId = req.params.id || req.body.venue;
-
-        const venue = await Venue.findById(venueId);
+        const venue = await Venue.findOne({ admin: req.user._id });
 
         if (!venue) {
             return res.status(404).json({
@@ -31,17 +28,11 @@ const venueAdminMiddleware = async (req, res, next) => {
             });
         }
 
-        if (venue.admin.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                message: "You are not the admin of this venue.",
-            });
-        }
-
+        req.venue = venue;
         next();
 
     } catch (error) {
         console.error(error);
-
         return res.status(500).json({
             message: "Internal Server Error",
         });

@@ -1,574 +1,172 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import {
-  FaUpload,
+  FaEdit,
   FaMapMarkerAlt,
-  FaPhone,
-  FaEnvelope,
-  FaClock,
   FaMoneyBillWave,
-  FaSave,
+  FaClock,
+  FaUserTie,
+  FaFutbol,
 } from "react-icons/fa";
 
 function AdminVenue() {
-  const [coverImage, setCoverImage] = useState(null);
+  const [venue, setVenue] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [galleryImages, setGalleryImages] = useState([]);
+  useEffect(() => {
+    const fetchMyVenue = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:5001/api/venue/my-venue", {
+          withCredentials: true,
+        });
+        // Handles both single object or array response from backend
+        const responseData = res.data.data || res.data;
+        const venueData = Array.isArray(responseData) ? responseData[0] : responseData;
+        setVenue(venueData);
+      } catch (err) {
+        console.error("Error fetching admin venue:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [venue, setVenue] = useState({
-    venueName: "",
-    bio: "",
-    address: "",
-    googleMap: "",
-    phone: "",
-    email: "",
-    openingTime: "",
-    closingTime: "",
-    pricePerHour: "",
+    fetchMyVenue();
+  }, []);
 
-    facilities: {
-      parking: false,
-      washroom: false,
-      changingRoom: false,
-      floodLights: false,
-      drinkingWater: false,
-      cafeteria: false,
-      equipmentRental: false,
-      firstAid: false,
-      cctv: false,
-      wifi: false,
-    },
-
-    cancellationPolicy: "Free Cancellation",
-
-    bookingRules: "",
-
-    refundPolicy: "",
-
-    termsConditions: "",
-
-    additionalInformation: "",
-  });
-
-  const handleChange = (e) => {
-    setVenue({
-      ...venue,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleFacility = (e) => {
-    setVenue({
-      ...venue,
-      facilities: {
-        ...venue.facilities,
-        [e.target.name]: e.target.checked,
-      },
-    });
-  };
-
-  const handleCoverImage = (e) => {
-    if (e.target.files[0]) {
-      setCoverImage(URL.createObjectURL(e.target.files[0]));
-    }
-  };
-
-  const handleGalleryImages = (e) => {
-    const files = Array.from(e.target.files);
-
-    const preview = files.map((file) =>
-      URL.createObjectURL(file)
+  if (loading) return <div className="p-6 text-gray-500">Loading venue details...</div>;
+  if (!venue)
+    return (
+      <div className="p-6 text-red-500 font-semibold">
+        No venue assigned to your admin account.
+      </div>
     );
 
-    setGalleryImages(preview);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    console.log(venue);
-
-    alert("Venue Updated Successfully");
-  };
-
   return (
-    <div className="space-y-8">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header Bar */}
+      <div className="flex justify-between items-center bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">{venue.name}</h1>
+          <p className="text-xs text-gray-500 mt-1">Venue Admin Overview</p>
+        </div>
 
-      {/* Header */}
-
-      <div>
-
-        <h1 className="text-3xl font-bold text-gray-800">
-          Venue
-        </h1>
-
-        <p className="mt-2 text-gray-500">
-          Manage your futsal venue information,
-          gallery and policies.
-        </p>
-
+        <Link
+          to={`/admin/venue/edit/${venue._id}`}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition shadow-sm"
+        >
+          <FaEdit /> Edit Venue
+        </Link>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-8"
-      >
+      {/* Main Card */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {venue.images && (
+          <div className="relative">
+            <img
+              src={venue.images}
+              alt={venue.name}
+              className="w-full h-72 object-cover"
+            />
+            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-emerald-800 shadow">
+              {venue.status || "Active"}
+            </div>
+          </div>
+        )}
 
-        {/* Cover Image */}
-
-        <div className="rounded-xl bg-white p-6 shadow">
-
-          <h2 className="mb-5 text-xl font-semibold">
-            Cover Image
-          </h2>
-
-          <div className="flex flex-col items-center">
-
-            {coverImage ? (
-
-              <img
-                src={coverImage}
-                alt=""
-                className="h-64 w-full rounded-xl object-cover"
-              />
-
-            ) : (
-
-              <div className="flex h-64 w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-100">
-
-                <div className="text-center">
-
-                  <FaUpload className="mx-auto text-5xl text-gray-400" />
-
-                  <p className="mt-3 text-gray-500">
-                    Upload Cover Image
-                  </p>
-
-                </div>
-
+        <div className="p-6 space-y-6">
+          {/* Key Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Price Info */}
+            <div className="flex items-center gap-4 p-4 bg-emerald-50/60 rounded-xl border border-emerald-100">
+              <div className="p-3 bg-emerald-600 text-white rounded-lg">
+                <FaMoneyBillWave className="text-xl" />
               </div>
+              <div>
+                <p className="text-xs font-medium text-emerald-800 uppercase tracking-wide">
+                  Hourly Rate
+                </p>
+                <p className="text-xl font-bold text-emerald-900">
+                  NRs. {venue.price}{" "}
+                  <span className="text-xs font-normal text-emerald-700">/ hr</span>
+                </p>
+              </div>
+            </div>
 
-            )}
+            {/* Location Info */}
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="p-3 bg-red-500 text-white rounded-lg">
+                <FaMapMarkerAlt className="text-xl" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Location
+                </p>
+                <p className="text-base font-semibold text-gray-800">
+                  {venue.location}
+                </p>
+              </div>
+            </div>
 
-            <label className="mt-5 cursor-pointer rounded-lg bg-green-600 px-5 py-3 text-white transition hover:bg-green-700">
+            {/* Managed By (Populated Admin) */}
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="p-3 bg-blue-600 text-white rounded-lg">
+                <FaUserTie className="text-xl" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Assigned Admin
+                </p>
+                <p className="text-base font-semibold text-gray-800">
+                  {typeof venue.admin === "object"
+                    ? venue.admin?.fullName || venue.admin?.name || "Admin Assigned"
+                    : "Admin User"}
+                </p>
+              </div>
+            </div>
 
-              Change Cover Photo
-
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleCoverImage}
-              />
-
-            </label>
-
+            {/* Category Info */}
+            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="p-3 bg-amber-500 text-white rounded-lg">
+                <FaFutbol className="text-xl" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Category
+                </p>
+                <p className="text-base font-semibold text-gray-800">
+                  {typeof venue.category === "object"
+                    ? venue.category?.name
+                    : venue.category || "General"}
+                </p>
+              </div>
+            </div>
           </div>
 
-        </div>
-
-        {/* Basic Information */}
-
-        <div className="rounded-xl bg-white p-6 shadow">
-
-          <h2 className="mb-6 text-xl font-semibold">
-            Venue Information
-          </h2>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Venue Name
-              </label>
-
-              <input
-                type="text"
-                name="venueName"
-                value={venue.venueName}
-                onChange={handleChange}
-                className="w-full rounded-lg border p-3"
-              />
-
+          {/* Operational Status Bar */}
+          <div className="pt-4 border-t flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <FaClock className="text-gray-400" />
+              <span>
+                Operational Status:{" "}
+                <strong
+                  className={
+                    venue.status === "Active"
+                      ? "text-emerald-600 font-semibold"
+                      : "text-amber-600 font-semibold"
+                  }
+                >
+                  {venue.status || "Active"}
+                </strong>
+              </span>
             </div>
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Phone Number
-              </label>
-
-              <div className="relative">
-
-                <FaPhone className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="text"
-                  name="phone"
-                  value={venue.phone}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border py-3 pl-11 pr-3"
-                />
-
-              </div>
-
-            </div>
-
-            <div className="md:col-span-2">
-
-              <label className="mb-2 block font-medium">
-                Venue Bio
-              </label>
-
-              <textarea
-                rows="4"
-                name="bio"
-                value={venue.bio}
-                onChange={handleChange}
-                className="w-full rounded-lg border p-3"
-              />
-
-            </div>
-                        {/* Address */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Address
-              </label>
-
-              <div className="relative">
-
-                <FaMapMarkerAlt className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="text"
-                  name="address"
-                  value={venue.address}
-                  onChange={handleChange}
-                  placeholder="Enter venue address"
-                  className="w-full rounded-lg border py-3 pl-11 pr-3 focus:border-green-500 focus:outline-none"
-                />
-
-              </div>
-
-            </div>
-
-            {/* Email */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Email
-              </label>
-
-              <div className="relative">
-
-                <FaEnvelope className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="email"
-                  name="email"
-                  value={venue.email}
-                  onChange={handleChange}
-                  placeholder="Enter email"
-                  className="w-full rounded-lg border py-3 pl-11 pr-3 focus:border-green-500 focus:outline-none"
-                />
-
-              </div>
-
-            </div>
-
-            {/* Google Map */}
-
-            
-
-              
-
-              
-
-            
-
-            {/* Opening Time */}
-
-            
-
-            {/* Closing Time */}
-
-            
-
-            {/* Price */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Price Per Hour (Rs.)
-              </label>
-
-              <div className="relative">
-
-                <FaMoneyBillWave className="absolute left-4 top-4 text-gray-400" />
-
-                <input
-                  type="number"
-                  name="pricePerHour"
-                  value={venue.pricePerHour}
-                  onChange={handleChange}
-                  placeholder="1200"
-                  className="w-full rounded-lg border py-3 pl-11 pr-3 focus:border-green-500 focus:outline-none"
-                />
-
-              </div>
-
-            </div>
-
+            <span className="text-xs text-gray-400">
+              Slug: <code className="bg-gray-100 px-2 py-0.5 rounded">{venue.slug}</code>
+            </span>
           </div>
-
         </div>
-
-        {/* ================= FACILITIES ================= */}
-
-        <div className="rounded-xl bg-white p-6 shadow">
-
-          <h2 className="mb-6 text-xl font-semibold">
-            Venue Facilities
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="parking"
-                checked={venue.facilities.parking}
-                onChange={handleFacility}
-              />
-              Parking
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="washroom"
-                checked={venue.facilities.washroom}
-                onChange={handleFacility}
-              />
-              Washroom
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="changingRoom"
-                checked={venue.facilities.changingRoom}
-                onChange={handleFacility}
-              />
-              Changing Room
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="floodLights"
-                checked={venue.facilities.floodLights}
-                onChange={handleFacility}
-              />
-              Flood Lights
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="drinkingWater"
-                checked={venue.facilities.drinkingWater}
-                onChange={handleFacility}
-              />
-              Drinking Water
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="cafeteria"
-                checked={venue.facilities.cafeteria}
-                onChange={handleFacility}
-              />
-              Cafeteria
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="equipmentRental"
-                checked={venue.facilities.equipmentRental}
-                onChange={handleFacility}
-              />
-              Equipment Rental
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="firstAid"
-                checked={venue.facilities.firstAid}
-                onChange={handleFacility}
-              />
-              First Aid
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="cctv"
-                checked={venue.facilities.cctv}
-                onChange={handleFacility}
-              />
-              CCTV
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="wifi"
-                checked={venue.facilities.wifi}
-                onChange={handleFacility}
-              />
-              WiFi
-            </label>
-
-          </div>
-
-        </div>
-                {/* ================= GALLERY ================= */}
-
-        
-        {/* ================= POLICIES ================= */}
-
-        <div className="rounded-xl bg-white p-6 shadow">
-
-          <h2 className="mb-6 text-xl font-semibold">
-            Venue Policies
-          </h2>
-
-          <div className="space-y-6">
-
-            {/* Cancellation Policy */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Cancellation Policy
-              </label>
-
-              <select
-                name="cancellationPolicy"
-                value={venue.cancellationPolicy}
-                onChange={handleChange}
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              >
-                <option>Free Cancellation</option>
-                <option>50% Refund</option>
-                <option>No Refund</option>
-              </select>
-
-            </div>
-
-            {/* Booking Rules */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Booking Rules
-              </label>
-
-              <textarea
-                rows="4"
-                name="bookingRules"
-                value={venue.bookingRules}
-                onChange={handleChange}
-                placeholder="Enter venue rules..."
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              />
-
-            </div>
-
-            {/* Refund Policy */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Refund Policy
-              </label>
-
-              <textarea
-                rows="4"
-                name="refundPolicy"
-                value={venue.refundPolicy}
-                onChange={handleChange}
-                placeholder="Describe your refund policy..."
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              />
-
-            </div>
-
-            {/* Terms & Conditions */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Terms & Conditions
-              </label>
-
-              <textarea
-                rows="4"
-                name="termsConditions"
-                value={venue.termsConditions}
-                onChange={handleChange}
-                placeholder="Enter terms & conditions..."
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              />
-
-            </div>
-
-            {/* Additional Information */}
-
-            <div>
-
-              <label className="mb-2 block font-medium">
-                Additional Information
-              </label>
-
-              <textarea
-                rows="4"
-                name="additionalInformation"
-                value={venue.additionalInformation}
-                onChange={handleChange}
-                placeholder="Any additional information about your venue..."
-                className="w-full rounded-lg border p-3 focus:border-green-500 focus:outline-none"
-              />
-
-            </div>
-
-          </div>
-
-        </div>
-                {/* ================= SAVE BUTTON ================= */}
-
-        <div className="flex justify-end">
-
-          <button
-            type="submit"
-            className="flex items-center gap-3 rounded-lg bg-green-600 px-8 py-3 text-lg font-semibold text-white shadow transition-all duration-300 hover:bg-green-700 hover:shadow-lg"
-          >
-            <FaSave />
-
-            Save Venue Details
-          </button>
-
-        </div>
-
-      </form>
-
+      </div>
     </div>
   );
 }

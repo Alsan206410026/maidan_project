@@ -24,7 +24,7 @@ function UserSidebar() {
     {name: "My Bookings", path: "/user/my-bookings", icon: <FaTrophy />},
     { name: "Chat", path: "/user/chat", icon: <FaComments /> },
     { name: "Logout", path: "/logout", icon: <FaSignOutAlt /> },
-    {name: "Home", path: "/", icon: <FaTachometerAlt />},
+    {name: "Home", path: "/",  icon: <FaSignOutAlt />},
 
   ];
 
