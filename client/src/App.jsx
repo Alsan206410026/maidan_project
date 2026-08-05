@@ -34,6 +34,9 @@ import SuperAdminManageVenue from "./Backend/SuperAdmin/venues/SuperAdminManageV
 import SuperAdminAddVenue from "./Backend/SuperAdmin/venues/SuperAdminAddVenue";
 import SuperAdminEditVenue from "./Backend/SuperAdmin/venues/SuperAdminEditVenue";
 
+import SuperAdminManageCategory from "./Backend/SuperAdmin/category/SuperAdminManageCategory";
+import SuperAdminAddCategory from "./Backend/SuperAdmin/category/SuperAdminAddCategory";
+import SuperAdminEditCategory from "./Backend/SuperAdmin/category/SuperAdminEditCategory";
 
 import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAdminManageTournament";
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
@@ -98,6 +101,11 @@ function App() {
           <Route path="/super-admin/venues" element={<SuperAdminManageVenue />} />
           <Route path="/super-admin/venues/add" element={<SuperAdminAddVenue />} />
           <Route path="/super-admin/venues/edit/:id" element={<SuperAdminEditVenue />} />
+
+          {/* Venue Category Management */}
+          <Route path="/super-admin/venue-category" element={<SuperAdminManageCategory />} />
+          <Route path="/super-admin/venue-category/add" element={<SuperAdminAddCategory />} />
+          <Route path="/super-admin/venue-category/edit/:id" element={<SuperAdminEditCategory />} />
 
           {/* Tournament Management */}
           <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />

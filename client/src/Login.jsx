@@ -56,16 +56,19 @@ function Login() {
         { withCredentials: true }
       );
 
+      const token = response?.data?.token;
       const role = response?.data?.role;
       const rememberMe = Boolean(data.rememberMe);
       const storage = rememberMe ? localStorage : sessionStorage;
       const cleanupStorage = rememberMe ? sessionStorage : localStorage;
 
+      cleanupStorage.removeItem("token");
       cleanupStorage.removeItem("role");
       cleanupStorage.removeItem("email");
       cleanupStorage.removeItem("password");
       cleanupStorage.removeItem("rememberMe");
 
+      storage.setItem("token", token);
       storage.setItem("role", role || "user");
       storage.setItem("email", response?.data?.email || data.email);
       storage.setItem("rememberMe", rememberMe ? "true" : "false");

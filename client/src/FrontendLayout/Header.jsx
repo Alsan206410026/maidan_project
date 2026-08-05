@@ -1,9 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import MaidanLogo from "../assets/Maidan_logo.png";
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [dashboardPath, setDashboardPath] = useState("/");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Re-run this check every time the route/location changes
+  useEffect(() => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+
+    if (token) {
+      setIsLoggedIn(true);
+
+      // Set the correct dashboard route based on the user's role
+      if (role === "super_admin") {
+        setDashboardPath("/super-admin-dashboard");
+      } else if (role === "admin") {
+        setDashboardPath("/admin-dashboard");
+      } else {
+        setDashboardPath("/user-dashboard");
+      }
+    } else {
+      setIsLoggedIn(false);
+      setDashboardPath("/");
+    }
+  }, [location]);
 
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
@@ -12,6 +38,15 @@ function Header() {
       document.body.style.overflow = "";
     };
   }, [isMenuOpen]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
 
   const navLinkClass = ({ isActive }) =>
     `${
@@ -102,45 +137,88 @@ function Header() {
                 </NavLink>
               </li>
 
-                            {/* Mobile and tab Login/Register */}
+              {/* Mobile and tab Login/Register or Dashboard/Logout */}
               {isMenuOpen && (
                 <li className="px-4 pt-3 lg:hidden border-t flex flex-col gap-2 md:flex-row md:justify-center md:gap-3 ">
-                  <NavLink
-                    to="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <button className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
-                      Login
-                    </button>
-                  </NavLink>
+                  {isLoggedIn ? (
+                    <>
+                      <NavLink
+                        to={dashboardPath}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <button className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                          Dashboard
+                        </button>
+                      </NavLink>
 
-                  <NavLink
-                    to="/register"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <button className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
-                      Register
-                    </button>
-                  </NavLink>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <NavLink
+                        to="/login"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <button className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                          Login
+                        </button>
+                      </NavLink>
 
+                      <NavLink
+                        to="/register"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <button className="w-full rounded-md border border-primary px-4 py-3 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                          Register
+                        </button>
+                      </NavLink>
+                    </>
+                  )}
                 </li>
               )}
             </ul>
           </nav>
 
-          {/* Desktop Login/Register */}
+          {/* Desktop Login/Register or Dashboard/Logout */}
           <div className="hidden lg:flex items-center gap-3">
-            <NavLink to="/login">
-              <button className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
-                Login
-              </button>
-            </NavLink>
+            {isLoggedIn ? (
+              <>
+                <NavLink to={dashboardPath}>
+                  <button className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                    Dashboard
+                  </button>
+                </NavLink>
 
-            <NavLink to="/register">
-              <button className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
-                Register
-              </button>
-            </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login">
+                  <button className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                    Login
+                  </button>
+                </NavLink>
+
+                <NavLink to="/register">
+                  <button className="rounded-md border border-primary px-4 py-2 font-semibold text-primary transition hover:bg-green-600 hover:text-white">
+                    Register
+                  </button>
+                </NavLink>
+              </>
+            )}
           </div>
 
           {/* Hamburger */}
@@ -178,7 +256,6 @@ function Header() {
           />
         )}
       </header>
-
     </>
   );
 }
