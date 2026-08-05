@@ -41,7 +41,6 @@ import SuperAdminEditCategory from "./Backend/SuperAdmin/category/SuperAdminEdit
 import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAdminManageTournament";
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
 import SuperAdminEditTournament from "./Backend/SuperAdmin/tournaments/SuperAdminEditTournament";
-import SuperAdminDeleteTournament from "./Backend/SuperAdmin/tournaments/SuperAdminDeleteTournament";
 
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
@@ -111,7 +110,7 @@ function App() {
           <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />
           <Route path="/super-admin/tournaments/add" element={<SuperAdminAddTournament />} />
           <Route path="/super-admin/tournaments/edit/:id" element={<SuperAdminEditTournament />} />
-          <Route path="/super-admin/tournaments/delete/:id" element={<SuperAdminDeleteTournament />} />
+         
 
           {/* Chat */}
           <Route path="/super-admin/chat" element={<ChatLayout />}>
