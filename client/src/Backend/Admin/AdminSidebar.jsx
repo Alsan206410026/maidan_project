@@ -38,7 +38,7 @@ function AdminSidebar() {
     },
     {
       name: "Manage Venue & Bookings",
-      path: "/admin/manage-bookings",
+      path: "/admin/manage",
       icon: <FaCalendarAlt />,
     },
     {

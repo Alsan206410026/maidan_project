@@ -2,258 +2,120 @@ const TimeSlot = require("../model/TimeSlot");
 const Booking = require("../model/Booking");
 const Venue = require("../model/Venue");
 
-//get time slot
+// Get available time slots for a specific date and venue
 const getTimeSlots = async (req, res) => {
   try {
     const { venueId, date } = req.query;
 
     if (!venueId) {
-      return res.status(400).json({
-        success: false,
-        message: "Venue ID is required.",
-      });
+      return res.status(400).json({ success: false, message: "Venue ID is required." });
     }
 
-    // 1. Fetch active master time slots set by Admin
-    const activeMasterSlots = await TimeSlot.find({
-      venue: venueId,
-      status: "Active",
-    }).sort({ startTime: 1 });
+    const masterSlots = await TimeSlot.find({ venue: venueId, status: "Active" }).sort({ startTime: 1 });
 
-    // If no date parameter is passed, return all active master slots
     if (!date) {
-      return res.status(200).json({
-        success: true,
-        count: activeMasterSlots.length,
-        data: activeMasterSlots,
-      });
+      return res.status(200).json({ success: true, count: masterSlots.length, data: masterSlots });
     }
 
-    // 2. Fetch reserved/booked slot IDs for the specific date
-    const reservedBookings = await Booking.find({
+    const existingBookings = await Booking.find({
       venue: venueId,
       bookingDate: date,
-      bookingStatus: { $in: ["Booked", "Paid"] },
-    }).select("slot");
+      bookingStatus: { $in: ["Booked", "Paid"] }
+    });
 
-    const reservedSlotIds = reservedBookings.map((b) => b.slot.toString());
+    const bookedSlotIds = existingBookings.map((b) => b.slot.toString());
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
 
-    // 3. Exclude booked slots for that date
-    const availableSlots = activeMasterSlots.filter(
-      (slot) => !reservedSlotIds.includes(slot._id.toString())
-    );
+    const availableSlots = masterSlots.filter((slot) => {
+      if (bookedSlotIds.includes(slot._id.toString())) return false;
+
+      if (date === todayStr) {
+        const [endHour, endMinute] = slot.endTime.split(":").map(Number);
+        const slotEndTime = new Date();
+        slotEndTime.setHours(endHour, endMinute, 0, 0);
+        if (now >= slotEndTime) return false;
+      }
+
+      return true;
+    });
 
     return res.status(200).json({
       success: true,
       bookingDate: date,
       count: availableSlots.length,
-      data: availableSlots,
+      data: availableSlots
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc    Get single time slot by ID
- * @route   GET /api/timeslot/:id
- * @access  Public
- */
+// Get single time slot by ID
 const getTimeSlotById = async (req, res) => {
   try {
     const slot = await TimeSlot.findById(req.params.id).populate("venue", "name location");
-
-    if (!slot) {
-      return res.status(404).json({
-        success: false,
-        message: "Time slot not found.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: slot,
-    });
+    if (!slot) return res.status(404).json({ success: false, message: "Time slot not found." });
+    return res.status(200).json({ success: true, data: slot });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc    Search and filter time slots (Supports Admin viewing active & inactive slots)
- * @route   GET /api/timeslot/search
- * @access  Public
- */
+// Search time slots
 const searchTimeSlots = async (req, res) => {
   try {
     const { venueId, status, startTime, endTime } = req.query;
     let query = {};
-
     if (venueId) query.venue = venueId;
-    if (status) query.status = status; // Allows searching for 'Active' or 'Inactive'
+    if (status) query.status = status;
     if (startTime) query.startTime = startTime;
     if (endTime) query.endTime = endTime;
 
-    const slots = await TimeSlot.find(query)
-      .populate("venue", "name location")
-      .sort({ startTime: 1 });
-
-    return res.status(200).json({
-      success: true,
-      count: slots.length,
-      data: slots,
-    });
+    const slots = await TimeSlot.find(query).populate("venue", "name location").sort({ startTime: 1 });
+    return res.status(200).json({ success: true, count: slots.length, data: slots });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc    Create a new time slot
- * @route   POST /api/timeslot
- * @access  Private (Admin / Venue Admin)
- */
+// Create a new time slot
 const createTimeSlot = async (req, res) => {
   try {
-    const { venueId, startTime, endTime, status } = req.body;
-
-    if (!venueId || !startTime || !endTime) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide venueId, startTime, and endTime.",
-      });
-    }
-
-    // 1. Verify venue existence
-    const venue = await Venue.findById(venueId);
-    if (!venue) {
-      return res.status(404).json({
-        success: false,
-        message: "Venue not found.",
-      });
-    }
-
-    // 2. Prevent duplicate identical slots
-    const existingSlot = await TimeSlot.findOne({
-      venue: venueId,
-      startTime,
-      endTime,
-    });
-
-    if (existingSlot) {
-      return res.status(400).json({
-        success: false,
-        message: "A time slot with this start and end time already exists for this venue.",
-      });
-    }
-
-    // 3. Create time slot
-    const newSlot = await TimeSlot.create({
-      venue: venueId,
-      startTime,
-      endTime,
-      status: status || "Active",
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Time slot created successfully.",
-      data: newSlot,
-    });
+    const { venueId, startTime, endTime } = req.body;
+    const newSlot = await TimeSlot.create({ venue: venueId, startTime, endTime, status: "Active" });
+    return res.status(201).json({ success: true, data: newSlot });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc    Update a time slot (Times or Active/Inactive status)
- * @route   PUT /api/timeslot/:id
- * @access  Private (Admin / Venue Admin)
- */
+// Update a time slot
 const updateTimeSlot = async (req, res) => {
   try {
-    const { startTime, endTime, status } = req.body;
-
-    const slot = await TimeSlot.findById(req.params.id);
-    if (!slot) {
-      return res.status(404).json({
-        success: false,
-        message: "Time slot not found.",
-      });
-    }
-
-    if (startTime) slot.startTime = startTime;
-    if (endTime) slot.endTime = endTime;
-    if (status) slot.status = status; // Control 'Active' or 'Inactive' toggle
-
-    await slot.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Time slot updated successfully.",
-      data: slot,
-    });
+    const slot = await TimeSlot.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    return res.status(200).json({ success: true, data: slot });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc    Delete a time slot
- * @route   DELETE /api/timeslot/:id
- * @access  Private (Admin / Venue Admin)
- */
+// Delete a time slot
 const deleteTimeSlot = async (req, res) => {
   try {
-    const slot = await TimeSlot.findById(req.params.id);
-
-    if (!slot) {
-      return res.status(404).json({
-        success: false,
-        message: "Time slot not found.",
-      });
-    }
-
-    // Safeguard: Prevent deletion if active or paid bookings depend on this slot
-    const existingBookings = await Booking.find({
-      slot: slot._id,
-      bookingStatus: { $in: ["Booked", "Paid", "Pending"] },
+    const activeBookings = await Booking.find({
+      slot: req.params.id,
+      bookingStatus: { $in: ["Booked", "Paid", "Pending"] }
     });
 
-    if (existingBookings.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Cannot delete time slot with existing active bookings. Set status to 'Inactive' instead.",
-      });
+    if (activeBookings.length > 0) {
+      return res.status(400).json({ success: false, message: "Cannot delete slot with active bookings." });
     }
 
-    await slot.deleteOne();
-
-    return res.status(200).json({
-      success: true,
-      message: "Time slot deleted successfully.",
-    });
+    await TimeSlot.findByIdAndDelete(req.params.id);
+    return res.status(200).json({ success: true, message: "Time slot deleted." });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -263,5 +125,5 @@ module.exports = {
   searchTimeSlots,
   createTimeSlot,
   updateTimeSlot,
-  deleteTimeSlot,
+  deleteTimeSlot
 };

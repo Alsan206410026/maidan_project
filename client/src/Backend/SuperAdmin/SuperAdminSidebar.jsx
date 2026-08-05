@@ -60,7 +60,7 @@ function SuperAdminSidebar() {
     {
       name: "Home",
       path: "/",
-      icon: <FaTachometerAlt />,
+       icon: <FaSignOutAlt />,
     }
     
   ];

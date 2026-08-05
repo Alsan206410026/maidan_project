@@ -10,21 +10,21 @@ const {
     deleteTimeSlot,
 } = require("../controllers/timeSlotController");
 
-const { venueAdminMiddleware } = require("../middleware/adminvenuemiddleware.js");
+const { venueAdminMiddleware } = require("../middleware/venueAdminMiddleware.js");
 const { protect } = require("../middleware/authmiddleware");
 const { superAdminOrAdmin } = require("../middleware/superAdminOrAdminMiddleware");
 
 router
     .route("/")
     .get(getTimeSlots)
-    .post(protect, superAdminOrAdmin,venueAdminMiddleware, createTimeSlot);
+    .post(protect ,venueAdminMiddleware, createTimeSlot);
 
 router.route("/search").get(searchTimeSlots);
 
 router
     .route("/:id")
     .get(getTimeSlotById)
-    .put(protect, superAdminOrAdmin,venueAdminMiddleware, updateTimeSlot)
-    .delete(protect, superAdminOrAdmin, venueAdminMiddleware, deleteTimeSlot);
+    .put(protect,venueAdminMiddleware, updateTimeSlot)
+    .delete(protect, venueAdminMiddleware, deleteTimeSlot);
 
 module.exports = router;

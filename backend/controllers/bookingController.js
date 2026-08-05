@@ -1,10 +1,9 @@
 const Booking = require("../model/Booking");
 const TimeSlot = require("../model/TimeSlot");
 const Venue = require("../model/Venue");
-const User = require("../model/User");
 const sendEmail = require("../utils/sendEmail");
 
-// create booking
+// Create booking (Authenticated Users)
 const createBooking = async (req, res) => {
   try {
     const venueId = req.body.venueId || req.body.venue;
@@ -19,7 +18,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 1. Verify venue exists
     const venue = await Venue.findById(venueId);
     if (!venue) {
       return res.status(404).json({
@@ -28,7 +26,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 2. Verify time slot exists and is active
     const timeSlot = await TimeSlot.findOne({
       _id: slotId,
       venue: venueId,
@@ -42,7 +39,20 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 3. Check for existing booking conflicts
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (bookingDate === todayStr) {
+      const [endHour, endMinute] = timeSlot.endTime.split(":").map(Number);
+      const slotEndTime = new Date();
+      slotEndTime.setHours(endHour, endMinute, 0, 0);
+
+      if (Date.now() > slotEndTime.getTime()) {
+        return res.status(400).json({
+          success: false,
+          message: "This time slot has already passed for today.",
+        });
+      }
+    }
+
     const existingBooking = await Booking.findOne({
       venue: venueId,
       slot: slotId,
@@ -53,14 +63,12 @@ const createBooking = async (req, res) => {
     if (existingBooking) {
       return res.status(400).json({
         success: false,
-        message: "This slot is already booked for the selected date.",
+        message: "This slot is already reserved for the selected date.",
       });
     }
 
-    // 4. Initial status determination
     const bookingStatus = paymentMethod === "Cash" ? "Booked" : "Pending";
 
-    // 5. Create booking using server-side venue price
     const booking = await Booking.create({
       user: userId,
       venue: venueId,
@@ -75,9 +83,8 @@ const createBooking = async (req, res) => {
     const populatedBooking = await Booking.findById(booking._id)
       .populate("venue", "name location images price")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email phone");
+      .populate("user", "fullName email phoneNumber");
 
-    // 6. Send Email Notification
     if (populatedBooking.user && populatedBooking.user.email) {
       const emailSubject =
         paymentMethod === "Cash"
@@ -85,7 +92,7 @@ const createBooking = async (req, res) => {
           : `Booking Initiated for ${populatedBooking.venue.name}`;
 
       const emailText =
-        `Hello ${populatedBooking.user.name},\n\n` +
+        `Hello ${populatedBooking.user.fullName || "User"},\n\n` +
         `Your booking request at ${populatedBooking.venue.name} has been processed.\n` +
         `Date: ${bookingDate}\n` +
         `Time Slot: ${populatedBooking.slot.startTime} - ${populatedBooking.slot.endTime}\n` +
@@ -94,11 +101,11 @@ const createBooking = async (req, res) => {
         `Booking Status: ${bookingStatus}\n\n` +
         `Thank you for using our system!`;
 
-      await sendEmail({
-        email: populatedBooking.user.email,
-        subject: emailSubject,
-        message: emailText,
-      }).catch((err) => console.error("Email send failed:", err.message));
+      await sendEmail(
+        populatedBooking.user.email,
+        emailSubject,
+        emailText
+      ).catch((err) => console.error("Email send failed:", err.message));
     }
 
     return res.status(201).json({
@@ -114,24 +121,27 @@ const createBooking = async (req, res) => {
   }
 };
 
-// get all bookings (scoped by user role for data visibility)
+// Get all bookings (Scoped cleanly via middleware context)
 const getAllBookings = async (req, res) => {
   try {
     let query = {};
 
-    // Filter database scope based on who is asking
-    if (req.user.role === "venueAdmin" || req.isVenueAdmin) {
+    if (req.user.role === "admin" && req.venue) {
+      query = { venue: req.venue._id };
+    } else if (req.user.role === "admin" && !req.venue) {
       const managedVenues = await Venue.find({ admin: req.user._id }).select("_id");
       const venueIds = managedVenues.map((v) => v._id);
-      query = { venue: { $in: venueIds } };
-    } else if (req.user.role !== "superadmin" && req.user.role !== "admin") {
+      if (venueIds.length > 0) {
+        query = { venue: { $in: venueIds } };
+      }
+    } else if (req.user.role !== "super_admin") {
       query = { user: req.user._id };
     }
 
     const bookings = await Booking.find(query)
       .populate("venue", "name location images price")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email phone")
+      .populate("user", "fullName email phoneNumber")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -147,13 +157,13 @@ const getAllBookings = async (req, res) => {
   }
 };
 
-// get booking by id
+// Get booking by ID
 const getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
       .populate("venue", "name location images price admin")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email phone");
+      .populate("user", "fullName email phoneNumber");
 
     if (!booking) {
       return res.status(404).json({
@@ -174,31 +184,29 @@ const getBookingById = async (req, res) => {
   }
 };
 
-// search bookings
+// Search bookings
 const searchBookings = async (req, res) => {
   try {
     const { date, bookingStatus, paymentStatus, venueId } = req.query;
     let query = {};
 
-    if (req.user.role === "venueAdmin" || req.isVenueAdmin) {
-      const managedVenues = await Venue.find({ admin: req.user._id }).select("_id");
-      const venueIds = managedVenues.map((v) => v._id);
-      query.venue = { $in: venueIds };
-    } else if (req.user.role !== "superadmin" && req.user.role !== "admin") {
+    if (req.user.role === "admin" && req.venue) {
+      query.venue = req.venue._id;
+    } else if (req.user.role !== "super_admin" && req.user.role !== "admin") {
       query.user = req.user._id;
     }
 
     if (date) query.bookingDate = date;
     if (bookingStatus) query.bookingStatus = bookingStatus;
     if (paymentStatus) query.paymentStatus = paymentStatus;
-    if (venueId && (req.user.role === "superadmin" || req.user.role === "admin")) {
+    if (venueId && (req.user.role === "super_admin" || req.user.role === "admin")) {
       query.venue = venueId;
     }
 
     const bookings = await Booking.find(query)
       .populate("venue", "name location images price")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email phone")
+      .populate("user", "fullName email phoneNumber")
       .sort({ bookingDate: -1 });
 
     return res.status(200).json({
@@ -214,7 +222,7 @@ const searchBookings = async (req, res) => {
   }
 };
 
-// update booking
+// Update booking
 const updateBooking = async (req, res) => {
   try {
     const { slotId, bookingDate, bookingStatus, paymentStatus } = req.body;
@@ -230,7 +238,12 @@ const updateBooking = async (req, res) => {
     const targetSlot = slotId || booking.slot;
     const targetDate = bookingDate || booking.bookingDate;
 
-    if (slotId || bookingDate) {
+    const isActivating =
+      (bookingStatus === "Booked" || bookingStatus === "Paid") &&
+      booking.bookingStatus !== "Booked" &&
+      booking.bookingStatus !== "Paid";
+
+    if (slotId || bookingDate || isActivating) {
       const conflictBooking = await Booking.findOne({
         _id: { $ne: booking._id },
         venue: booking.venue,
@@ -242,7 +255,7 @@ const updateBooking = async (req, res) => {
       if (conflictBooking) {
         return res.status(400).json({
           success: false,
-          message: "The new slot is already booked for that date.",
+          message: "The target slot is already reserved for that date.",
         });
       }
 
@@ -253,34 +266,45 @@ const updateBooking = async (req, res) => {
     const oldBookingStatus = booking.bookingStatus;
     const oldPaymentStatus = booking.paymentStatus;
 
-    if (bookingStatus) booking.bookingStatus = bookingStatus;
-    if (paymentStatus) booking.paymentStatus = paymentStatus;
+    if (paymentStatus === "Paid") {
+      booking.paymentStatus = "Paid";
+      booking.bookingStatus = "Paid";
+    } else {
+      if (bookingStatus) booking.bookingStatus = bookingStatus;
+      if (paymentStatus) booking.paymentStatus = paymentStatus;
+    }
 
     await booking.save();
 
     const updatedBooking = await Booking.findById(booking._id)
       .populate("venue", "name location images price")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email phone");
+      .populate("user", "fullName email phoneNumber");
 
     if (updatedBooking.user && updatedBooking.user.email) {
       if (bookingStatus === "Cancelled" && oldBookingStatus !== "Cancelled") {
-        await sendEmail({
-          email: updatedBooking.user.email,
-          subject: `Booking Cancelled - ${updatedBooking.venue.name}`,
-          message: `Hello ${updatedBooking.user.name},\n\nYour booking at ${updatedBooking.venue.name} for ${updatedBooking.bookingDate} (${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}) has been cancelled.\n\nIf you have any questions, please contact venue support.`,
-        }).catch((err) => console.error("Email send failed:", err.message));
+        const cancelSubject = `Booking Cancelled - ${updatedBooking.venue.name}`;
+        const cancelText = `Hello ${updatedBooking.user.fullName},\n\nYour booking at ${updatedBooking.venue.name} for ${updatedBooking.bookingDate} (${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}) has been cancelled.\n\nThe time slot is now available for other users.`;
+
+        await sendEmail(
+          updatedBooking.user.email,
+          cancelSubject,
+          cancelText
+        ).catch((err) => console.error("Email send failed:", err.message));
       }
 
       if (
-        (bookingStatus === "Booked" || bookingStatus === "Paid" || paymentStatus === "Paid") &&
-        (oldBookingStatus !== bookingStatus || oldPaymentStatus !== paymentStatus)
+        (booking.bookingStatus === "Booked" || booking.bookingStatus === "Paid") &&
+        (oldBookingStatus !== booking.bookingStatus || oldPaymentStatus !== booking.paymentStatus)
       ) {
-        await sendEmail({
-          email: updatedBooking.user.email,
-          subject: `Your futsal ground has been booked! - ${updatedBooking.venue.name}`,
-          message: `Hello ${updatedBooking.user.name},\n\nGreat news! Your futsal booking at ${updatedBooking.venue.name} is confirmed and marked as ${bookingStatus}.\n\nDate: ${updatedBooking.bookingDate}\nTime: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\nPayment Status: ${updatedBooking.paymentStatus}\n\nSee you on the ground!`,
-        }).catch((err) => console.error("Email send failed:", err.message));
+        const confirmSubject = `Your futsal ground has been booked! - ${updatedBooking.venue.name}`;
+        const confirmText = `Hello ${updatedBooking.user.fullName},\n\nGreat news! Your futsal booking at ${updatedBooking.venue.name} is confirmed and marked as ${booking.bookingStatus}.\n\nDate: ${updatedBooking.bookingDate}\nTime: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\nPayment Status: ${updatedBooking.paymentStatus}\n\nSee you on the ground!`;
+
+        await sendEmail(
+          updatedBooking.user.email,
+          confirmSubject,
+          confirmText
+        ).catch((err) => console.error("Email send failed:", err.message));
       }
     }
 
@@ -297,13 +321,13 @@ const updateBooking = async (req, res) => {
   }
 };
 
-// delete booking
+// Delete booking
 const deleteBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
       .populate("venue", "name")
       .populate("slot", "startTime endTime")
-      .populate("user", "name email");
+      .populate("user", "fullName email");
 
     if (!booking) {
       return res.status(404).json({
@@ -313,11 +337,14 @@ const deleteBooking = async (req, res) => {
     }
 
     if (booking.user && booking.user.email) {
-      await sendEmail({
-        email: booking.user.email,
-        subject: `Booking Cancelled - ${booking.venue ? booking.venue.name : "Venue"}`,
-        message: `Hello ${booking.user.name},\n\nYour booking for ${booking.bookingDate} has been deleted and cancelled.\n\nThe time slot is now available for other users.`,
-      }).catch((err) => console.error("Email send failed:", err.message));
+      const deleteSubject = `Booking Cancelled - ${booking.venue ? booking.venue.name : "Venue"}`;
+      const deleteText = `Hello ${booking.user.fullName},\n\nYour booking for ${booking.bookingDate} has been deleted and cancelled.\n\nThe time slot is now available for other users.`;
+
+      await sendEmail(
+        booking.user.email,
+        deleteSubject,
+        deleteText
+      ).catch((err) => console.error("Email send failed:", err.message));
     }
 
     await booking.deleteOne();
