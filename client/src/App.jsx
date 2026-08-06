@@ -24,25 +24,20 @@ import ProtectedRoute from "./Backend/ProtectedRoute";
 // ================= SUPER ADMIN =================
 import SuperAdminSidebar from "./Backend/SuperAdmin/SuperAdminSidebar";
 import SuperAdminDashboard from "./Backend/SuperAdmin/SuperAdminDashboard";
-
 import SuperAdminUserLayout from "./Backend/SuperAdmin/User/SuperAdminUserLayout";
 import SuperAdminManageUser from "./Backend/SuperAdmin/User/SuperAdminManageUser";
 import SuperAdminManageAdmins from "./Backend/SuperAdmin/User/SuperAdminManageAdmins";
 import SuperAdminManageSuperAdmin from "./Backend/SuperAdmin/User/SuperAdminManageSuperAdmin";
 import SuperAdminEditUser from "./Backend/SuperAdmin/User/SuperAdminEditUser";
-
 import SuperAdminManageVenue from "./Backend/SuperAdmin/venues/SuperAdminManageVenue";
 import SuperAdminAddVenue from "./Backend/SuperAdmin/venues/SuperAdminAddVenue";
 import SuperAdminEditVenue from "./Backend/SuperAdmin/venues/SuperAdminEditVenue";
-
 import SuperAdminManageCategory from "./Backend/SuperAdmin/category/SuperAdminManageCategory";
 import SuperAdminAddCategory from "./Backend/SuperAdmin/category/SuperAdminAddCategory";
 import SuperAdminEditCategory from "./Backend/SuperAdmin/category/SuperAdminEditCategory";
-
 import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAdminManageTournament";
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
 import SuperAdminEditTournament from "./Backend/SuperAdmin/tournaments/SuperAdminEditTournament";
-
 import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
 import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
 
@@ -51,15 +46,11 @@ import AdminSidebar from "./Backend/Admin/AdminSidebar";
 import AdminDashboard from "./Backend/Admin/AdminDashboard";
 import AdminVenue from "./Backend/Admin/Venue/AdminVenue";
 import AdminEditVenue from "./Backend/Admin/Venue/AdminEditVenue";
-
-// Admin Management Components (Matching your exact folder structure)
 import AdminLayout from "./Backend/Admin/Manage/AdminLayout";
 import AdminManageBooking from "./Backend/Admin/Manage/Booking/AdminManageBooking";
 import AdminEditBooking from "./Backend/Admin/Manage/Booking/AdminEditBooking";
 import AdminManageTimeSlot from "./Backend/Admin/Manage/TimeSlot/AdminManageTimeSlot";
 import AdminEditTimeSlot from "./Backend/Admin/Manage/TimeSlot/AdminEditTimeSlot";
-
-// Admin Chat Components
 import AdminChatLayout from "./Backend/Admin/Chat/AdminChatLayout";
 import AdminChatList from "./Backend/Admin/Chat/AdminChatList";
 import AdminChat from "./Backend/Admin/Chat/AdminChat";
@@ -72,8 +63,6 @@ import Booking from "./Backend/User/Booking/Booking";
 import EsewaPayment from "./Backend/User/Booking/EsewaPayment";
 import UsersChatLayout from "./Backend/User/Chat/UsersChatLayout";
 import UsersChat from "./Backend/User/Chat/UsersChat";
-
-// User MyBookings Modules
 import BookingsLayout from "./Backend/User/mybookings/BookingsLayout";
 import ActiveBookings from "./Backend/User/mybookings/ActiveBookings";
 import PendingPage from "./Backend/User/mybookings/PendingPage";
@@ -82,7 +71,7 @@ import HistoryPage from "./Backend/User/mybookings/HistoryPage";
 function App() {
   return (
     <Routes>
-      {/* ================= Frontend Routes ================= */}
+      {/* ================= FRONTEND ================= */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -98,12 +87,11 @@ function App() {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
 
-      {/* ================= Super Admin Routes ================= */}
+      {/* ================= SUPER ADMIN ================= */}
       <Route element={<ProtectedRoute role="super_admin" />}>
         <Route element={<SuperAdminSidebar />}>
           <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 
-          {/* User Management */}
           <Route path="/super-admin/users" element={<SuperAdminUserLayout />}>
             <Route index element={<SuperAdminManageUser />} />
             <Route path="admins" element={<SuperAdminManageAdmins />} />
@@ -111,44 +99,40 @@ function App() {
             <Route path="edit/:id" element={<SuperAdminEditUser />} />
           </Route>
 
-          {/* Venue Management */}
           <Route path="/super-admin/venues" element={<SuperAdminManageVenue />} />
           <Route path="/super-admin/venues/add" element={<SuperAdminAddVenue />} />
           <Route path="/super-admin/venues/edit/:id" element={<SuperAdminEditVenue />} />
 
-          {/* Venue Category Management */}
           <Route path="/super-admin/venue-category" element={<SuperAdminManageCategory />} />
           <Route path="/super-admin/venue-category/add" element={<SuperAdminAddCategory />} />
           <Route path="/super-admin/venue-category/edit/:id" element={<SuperAdminEditCategory />} />
 
-          {/* Tournament Management */}
           <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />
           <Route path="/super-admin/tournaments/add" element={<SuperAdminAddTournament />} />
           <Route path="/super-admin/tournaments/edit/:id" element={<SuperAdminEditTournament />} />
 
-          {/* Chat */}
           <Route path="/super-admin/chat" element={<ChatLayout />}>
             <Route path=":userId" element={<SuperAdminChat />} />
           </Route>
         </Route>
       </Route>
 
-      {/* ================= Admin Routes ================= */}
+      {/* ================= ADMIN ================= */}
       <Route element={<ProtectedRoute role="admin" />}>
         <Route element={<AdminSidebar />}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          
-          {/* Admin Venue */}
+
+          {/* Venue */}
           <Route path="/admin/venue" element={<AdminVenue />} />
           <Route path="/admin/venue/edit/:id" element={<AdminEditVenue />} />
 
-          {/* Admin Management (Bookings & Time Slots) */}
+          {/* Manage */}
           <Route path="/admin/manage" element={<AdminLayout />}>
             <Route index element={<Navigate to="bookings" replace />} />
             <Route path="bookings" element={<AdminManageBooking />} />
             <Route path="edit/:venueId/:id" element={<AdminEditBooking />} />
             <Route path="timeslots" element={<AdminManageTimeSlot />} />
-            <Route path="timeslots/edit/:id" element={<AdminEditTimeSlot />} />
+            <Route path="timeslots/edit/:venueId/:id" element={<AdminEditTimeSlot />} />
           </Route>
 
           {/* Admin Chat */}
@@ -159,7 +143,7 @@ function App() {
         </Route>
       </Route>
 
-      {/* ================= User Routes ================= */}
+      {/* ================= USER ================= */}
       <Route element={<ProtectedRoute role="user" />}>
         <Route element={<UserSidebar />}>
           <Route path="/user-dashboard" element={<UserDashboard />} />
@@ -167,7 +151,6 @@ function App() {
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/user/esewa-payment" element={<EsewaPayment />} />
 
-          {/* User Bookings Management */}
           <Route path="/user/my-bookings" element={<BookingsLayout />}>
             <Route index element={<Navigate to="paid" replace />} />
             <Route path="paid" element={<ActiveBookings />} />
@@ -175,7 +158,6 @@ function App() {
             <Route path="history" element={<HistoryPage />} />
           </Route>
 
-          {/* User Chat */}
           <Route path="/user/chat" element={<UsersChatLayout />}>
             <Route path=":ownerId" element={<UsersChat />} />
           </Route>

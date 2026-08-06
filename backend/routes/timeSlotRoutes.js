@@ -5,13 +5,13 @@ const { getTimeSlots, getTimeSlotById, searchTimeSlots, createTimeSlot, updateTi
 const { protect } = require("../middleware/authmiddleware");
 const { venueAdminMiddleware } = require("../middleware/venueAdminMiddleware");
 
-// Public / User routes
+// User / Public routes
 router.get("/", getTimeSlots);
-router.post("/", protect, venueAdminMiddleware, createTimeSlot);
 router.get("/search", searchTimeSlots);
 router.get("/:id", getTimeSlotById);
 
 // Admin routes
+router.post("/admin/:venueId", protect, venueAdminMiddleware, createTimeSlot);
 router.put("/admin/:venueId/:id", protect, venueAdminMiddleware, updateTimeSlot);
 router.delete("/admin/:venueId/:id", protect, venueAdminMiddleware, deleteTimeSlot);
 
