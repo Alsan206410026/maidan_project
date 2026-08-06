@@ -53,8 +53,7 @@ const initiatePayment = async (req, res) => {
 
     const transactionUUID = booking.transaction._id.toString();
 
-    const amount = booking.totalAmount;
-
+    const amount = booking.transaction.amount
     const tax_amount = 0;
     const product_service_charge = 0;
     const product_delivery_charge = 0;

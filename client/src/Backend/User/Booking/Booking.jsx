@@ -44,7 +44,7 @@ function Booking() {
 
     if (!match) return true;
 
-    let [, hours, minutes, modifier] = match;
+    let [ hours, minutes, modifier] = match;
 
     let slotHours = parseInt(hours, 10);
     const slotMinutes = parseInt(minutes, 10);

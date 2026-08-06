@@ -141,10 +141,12 @@ function App() {
             <Route path="timeslots/edit/:venueId/:id" element={<AdminEditTimeSlot />} />
           </Route>
 
+          {/* Admin Chat List */}
+            <Route index element={<AdminChatList />} />
+
           {/* Admin Chat */}
           <Route path="/admin/chat" element={<AdminChatLayout />}>
-            <Route index element={<AdminChatList />} />
-            <Route path=":userId" element={<AdminChat />} />
+           <Route path=":userId" element={<AdminChat />} />
           </Route>
         </Route>
       </Route>
@@ -167,9 +169,6 @@ function App() {
             <Route path=":ownerId" element={<UsersChat />} />
           </Route>
 
-          <Route path="/users/chat" element={<UsersChatLayout />}>
-            <Route path=":ownerId" element={<UsersChat />} />
-          </Route>
         </Route>
       </Route>
 

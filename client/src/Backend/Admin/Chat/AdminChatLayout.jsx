@@ -7,11 +7,8 @@ function AdminChatLayout() {
 
   return (
     <div className="h-[calc(100vh-110px)]">
-
       {/* Desktop */}
-
       <div className="hidden h-full lg:grid lg:grid-cols-12 lg:gap-5">
-
         <div className="col-span-4 xl:col-span-3">
           <AdminChatList />
         </div>
@@ -20,29 +17,25 @@ function AdminChatLayout() {
           {userId ? (
             <Outlet />
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold">Select a chat</h2>
-                <p className="text-sm text-gray-500">Choose a conversation from the list to start chatting.</p>
+            <div className="flex h-full items-center justify-center rounded-2xl bg-white shadow-lg">
+              <div className="text-center text-gray-500">
+                <p className="text-lg font-semibold text-gray-700">
+                  Select a chat
+                </p>
+
+                <p className="mt-2 text-sm">
+                  Choose a user from the list to start messaging.
+                </p>
               </div>
             </div>
           )}
         </div>
-
       </div>
 
       {/* Mobile */}
-
       <div className="h-full lg:hidden">
-
-        {userId ? (
-          <Outlet />
-        ) : (
-          <AdminChatList />
-        )}
-
+        {userId ? <Outlet /> : <AdminChatList />}
       </div>
-
     </div>
   );
 }
