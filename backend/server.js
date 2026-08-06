@@ -12,7 +12,7 @@ const sessionMiddleware = require("./middleware/sessionmiddleware");
 const updatetournamentstatus = require("./jobs/updatetournamentstatus.job.js");
 const pendingremove = require("./jobs/pendingremove.js");
 
-const esewaRoutes = require("./routes/esewaRoutes");
+
 
 connectDB();
 
@@ -70,7 +70,9 @@ app.use("/api/tournament", require("./routes/tournamentRoutes"));
 app.use("/api/booking", require("./routes/bookingRoutes"));
 app.use("/api/timeslot", require("./routes/timeSlotRoutes"));
 app.use("/api/users", require("./routes/GetAdminForChat.Routes.js"));
-app.use("/api/esewa", esewaRoutes);
+app.use("/api/admin/chat", require("./routes/AdminChat.routes"));
+app.use("/api/esewa", require("./routes/esewaRoutes"));
+app.use("/api/messages", require("./routes/message.routes.js"));
 
 const PORT = process.env.PORT || 5001;
 

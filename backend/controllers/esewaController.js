@@ -96,7 +96,7 @@ const initiatePayment = async (req, res) => {
 
         success_url: esewaConfig.successUrl,
 
-        failure_url: esewaConfig.failureUrl,
+        failure_url: `${esewaConfig.failureUrl}?transaction_uuid=${transactionUUID}`,
 
         signed_field_names,
 
@@ -201,6 +201,9 @@ const paymentSuccess = async (req, res) => {
 // ==========================================
 const paymentFailure = async (req, res) => {
   try {
+
+      
+
     const { transaction_uuid } = req.query;
 
     if (transaction_uuid) {
@@ -209,13 +212,20 @@ const paymentFailure = async (req, res) => {
       if (transaction) {
         transaction.status = "FAILED";
         await transaction.save();
+
+        // Find related booking
+        const booking = await Booking.findOne({
+          transaction: transaction._id,
+        });
+
+        if (booking) {
+          booking.bookingStatus = "Cancelled";
+          await booking.save();
+        }
       }
     }
 
-    return res.redirect(
-      "http://localhost:5180/payment/failed"
-    );
-
+    return res.redirect("http://localhost:5180/payment/failed");
   } catch (error) {
     return res.status(500).json({
       success: false,
