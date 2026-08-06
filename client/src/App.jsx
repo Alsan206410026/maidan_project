@@ -146,7 +146,7 @@ function App() {
           <Route path="/admin/manage" element={<AdminLayout />}>
             <Route index element={<Navigate to="bookings" replace />} />
             <Route path="bookings" element={<AdminManageBooking />} />
-            <Route path="bookings/edit/:id" element={<AdminEditBooking />} />
+            <Route path="edit/:venueId/:id" element={<AdminEditBooking />} />
             <Route path="timeslots" element={<AdminManageTimeSlot />} />
             <Route path="timeslots/edit/:id" element={<AdminEditTimeSlot />} />
           </Route>

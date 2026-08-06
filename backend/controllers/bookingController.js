@@ -3,7 +3,8 @@ const TimeSlot = require("../model/TimeSlot");
 const Venue = require("../model/Venue");
 const sendEmail = require("../utils/sendEmail");
 
-// Create booking (Authenticated Users)
+// Create Booking
+
 const createBooking = async (req, res) => {
   try {
     const venueId = req.body.venueId || req.body.venue;
@@ -14,11 +15,13 @@ const createBooking = async (req, res) => {
     if (!venueId || !slotId || !bookingDate || !paymentMethod) {
       return res.status(400).json({
         success: false,
-        message: "Please provide venueId, slotId, bookingDate, and paymentMethod.",
+        message:
+          "Please provide venueId, slotId, bookingDate and paymentMethod.",
       });
     }
 
     const venue = await Venue.findById(venueId);
+
     if (!venue) {
       return res.status(404).json({
         success: false,
@@ -35,20 +38,25 @@ const createBooking = async (req, res) => {
     if (!timeSlot) {
       return res.status(400).json({
         success: false,
-        message: "Selected time slot is invalid or currently inactive.",
+        message: "Selected time slot is invalid or inactive.",
       });
     }
 
     const todayStr = new Date().toISOString().split("T")[0];
+
     if (bookingDate === todayStr) {
-      const [endHour, endMinute] = timeSlot.endTime.split(":").map(Number);
+      const [endHour, endMinute] = timeSlot.endTime
+        .split(":")
+        .map(Number);
+
       const slotEndTime = new Date();
+
       slotEndTime.setHours(endHour, endMinute, 0, 0);
 
       if (Date.now() > slotEndTime.getTime()) {
         return res.status(400).json({
           success: false,
-          message: "This time slot has already passed for today.",
+          message: "This time slot has already passed.",
         });
       }
     }
@@ -57,17 +65,20 @@ const createBooking = async (req, res) => {
       venue: venueId,
       slot: slotId,
       bookingDate,
-      bookingStatus: { $in: ["Booked", "Paid"] },
+      bookingStatus: {
+        $in: ["Booked", "Paid"],
+      },
     });
 
     if (existingBooking) {
       return res.status(400).json({
         success: false,
-        message: "This slot is already reserved for the selected date.",
+        message: "This slot is already reserved.",
       });
     }
 
-    const bookingStatus = paymentMethod === "Cash" ? "Booked" : "Pending";
+    const bookingStatus =
+      paymentMethod === "Cash" ? "Booked" : "Pending";
 
     const booking = await Booking.create({
       user: userId,
@@ -85,27 +96,34 @@ const createBooking = async (req, res) => {
       .populate("slot", "startTime endTime")
       .populate("user", "fullName email phoneNumber");
 
-    if (populatedBooking.user && populatedBooking.user.email) {
-      const emailSubject =
+    if (
+      populatedBooking.user &&
+      populatedBooking.user.email
+    ) {
+      const subject =
         paymentMethod === "Cash"
-          ? `Booking Confirmed for ${populatedBooking.venue.name}`
-          : `Booking Initiated for ${populatedBooking.venue.name}`;
+          ? `Booking Confirmed - ${populatedBooking.venue.name}`
+          : `Booking Request Received - ${populatedBooking.venue.name}`;
 
-      const emailText =
-        `Hello ${populatedBooking.user.fullName || "User"},\n\n` +
-        `Your booking request at ${populatedBooking.venue.name} has been processed.\n` +
-        `Date: ${bookingDate}\n` +
-        `Time Slot: ${populatedBooking.slot.startTime} - ${populatedBooking.slot.endTime}\n` +
-        `Total Amount: NRs. ${populatedBooking.totalAmount}\n` +
+      const message =
+        `Hello ${
+          populatedBooking.user.fullName || "User"
+        },\n\n` +
+        `Thank you for booking ${populatedBooking.venue.name}.\n\n` +
+        `Booking Date: ${bookingDate}\n` +
+        `Time: ${populatedBooking.slot.startTime} - ${populatedBooking.slot.endTime}\n` +
         `Payment Method: ${paymentMethod}\n` +
-        `Booking Status: ${bookingStatus}\n\n` +
-        `Thank you for using our system!`;
+        `Booking Status: ${bookingStatus}\n` +
+        `Amount: NRs. ${populatedBooking.totalAmount}\n\n` +
+        `Thank you for choosing Maidan.`;
 
       await sendEmail(
         populatedBooking.user.email,
-        emailSubject,
-        emailText
-      ).catch((err) => console.error("Email send failed:", err.message));
+        subject,
+        message
+      ).catch((err) =>
+        console.error("Email send failed:", err.message)
+      );
     }
 
     return res.status(201).json({
@@ -121,28 +139,57 @@ const createBooking = async (req, res) => {
   }
 };
 
-// Get all bookings (Scoped cleanly via middleware context)
+// Get All Bookings
+
 const getAllBookings = async (req, res) => {
   try {
     let query = {};
 
     if (req.user.role === "admin" && req.venue) {
-      query = { venue: req.venue._id };
-    } else if (req.user.role === "admin" && !req.venue) {
-      const managedVenues = await Venue.find({ admin: req.user._id }).select("_id");
-      const venueIds = managedVenues.map((v) => v._id);
+      query = {
+        venue: req.venue._id,
+      };
+    } else if (
+      req.user.role === "admin" &&
+      !req.venue
+    ) {
+      const managedVenues = await Venue.find({
+        admin: req.user._id,
+      }).select("_id");
+
+      const venueIds = managedVenues.map(
+        (venue) => venue._id
+      );
+
       if (venueIds.length > 0) {
-        query = { venue: { $in: venueIds } };
+        query = {
+          venue: {
+            $in: venueIds,
+          },
+        };
       }
     } else if (req.user.role !== "super_admin") {
-      query = { user: req.user._id };
+      query = {
+        user: req.user._id,
+      };
     }
 
     const bookings = await Booking.find(query)
-      .populate("venue", "name location images price")
-      .populate("slot", "startTime endTime")
-      .populate("user", "fullName email phoneNumber")
-      .sort({ createdAt: -1 });
+      .populate(
+        "venue",
+        "name location images price"
+      )
+      .populate(
+        "slot",
+        "startTime endTime"
+      )
+      .populate(
+        "user",
+        "fullName email phoneNumber"
+      )
+      .sort({
+        createdAt: -1,
+      });
 
     return res.status(200).json({
       success: true,
@@ -156,14 +203,23 @@ const getAllBookings = async (req, res) => {
     });
   }
 };
+// Get Booking By ID
 
-// Get booking by ID
 const getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate("venue", "name location images price admin")
-      .populate("slot", "startTime endTime")
-      .populate("user", "fullName email phoneNumber");
+      .populate(
+        "venue",
+        "name location images price admin"
+      )
+      .populate(
+        "slot",
+        "startTime endTime"
+      )
+      .populate(
+        "user",
+        "fullName email phoneNumber"
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -184,30 +240,78 @@ const getBookingById = async (req, res) => {
   }
 };
 
-// Search bookings
+// Search Bookings
+
 const searchBookings = async (req, res) => {
   try {
-    const { date, bookingStatus, paymentStatus, venueId } = req.query;
+    const {
+      date,
+      bookingStatus,
+      paymentStatus,
+      venueId,
+    } = req.query;
+
     let query = {};
 
     if (req.user.role === "admin" && req.venue) {
       query.venue = req.venue._id;
-    } else if (req.user.role !== "super_admin" && req.user.role !== "admin") {
+    } else if (
+      req.user.role === "admin" &&
+      !req.venue
+    ) {
+      const managedVenues = await Venue.find({
+        admin: req.user._id,
+      }).select("_id");
+
+      const venueIds = managedVenues.map(
+        (venue) => venue._id
+      );
+
+      query.venue = {
+        $in: venueIds,
+      };
+    } else if (
+      req.user.role !== "super_admin"
+    ) {
       query.user = req.user._id;
     }
 
-    if (date) query.bookingDate = date;
-    if (bookingStatus) query.bookingStatus = bookingStatus;
-    if (paymentStatus) query.paymentStatus = paymentStatus;
-    if (venueId && (req.user.role === "super_admin" || req.user.role === "admin")) {
+    if (date) {
+      query.bookingDate = date;
+    }
+
+    if (bookingStatus) {
+      query.bookingStatus = bookingStatus;
+    }
+
+    if (paymentStatus) {
+      query.paymentStatus = paymentStatus;
+    }
+
+    if (
+      venueId &&
+      (req.user.role === "super_admin" ||
+        req.user.role === "admin")
+    ) {
       query.venue = venueId;
     }
 
     const bookings = await Booking.find(query)
-      .populate("venue", "name location images price")
-      .populate("slot", "startTime endTime")
-      .populate("user", "fullName email phoneNumber")
-      .sort({ bookingDate: -1 });
+      .populate(
+        "venue",
+        "name location images price"
+      )
+      .populate(
+        "slot",
+        "startTime endTime"
+      )
+      .populate(
+        "user",
+        "fullName email phoneNumber"
+      )
+      .sort({
+        bookingDate: -1,
+      });
 
     return res.status(200).json({
       success: true,
@@ -222,12 +326,20 @@ const searchBookings = async (req, res) => {
   }
 };
 
-// Update booking
+
+// Update Booking
+
 const updateBooking = async (req, res) => {
   try {
-    const { slotId, bookingDate, bookingStatus, paymentStatus } = req.body;
+    const {
+      slotId,
+      bookingDate,
+      bookingStatus,
+      paymentStatus,
+    } = req.body;
 
     const booking = await Booking.findById(req.params.id);
+
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -239,23 +351,29 @@ const updateBooking = async (req, res) => {
     const targetDate = bookingDate || booking.bookingDate;
 
     const isActivating =
-      (bookingStatus === "Booked" || bookingStatus === "Paid") &&
+      (bookingStatus === "Booked" ||
+        bookingStatus === "Paid") &&
       booking.bookingStatus !== "Booked" &&
       booking.bookingStatus !== "Paid";
 
     if (slotId || bookingDate || isActivating) {
       const conflictBooking = await Booking.findOne({
-        _id: { $ne: booking._id },
+        _id: {
+          $ne: booking._id,
+        },
         venue: booking.venue,
         slot: targetSlot,
         bookingDate: targetDate,
-        bookingStatus: { $in: ["Booked", "Paid"] },
+        bookingStatus: {
+          $in: ["Booked", "Paid"],
+        },
       });
 
       if (conflictBooking) {
         return res.status(400).json({
           success: false,
-          message: "The target slot is already reserved for that date.",
+          message:
+            "The selected slot is already booked for that date.",
         });
       }
 
@@ -263,48 +381,128 @@ const updateBooking = async (req, res) => {
       booking.bookingDate = targetDate;
     }
 
-    const oldBookingStatus = booking.bookingStatus;
-    const oldPaymentStatus = booking.paymentStatus;
+    const oldBookingStatus =
+      booking.bookingStatus;
+
+    const oldPaymentStatus =
+      booking.paymentStatus;
+
+    if (bookingStatus) {
+      booking.bookingStatus = bookingStatus;
+    }
+
+    if (paymentStatus) {
+      booking.paymentStatus = paymentStatus;
+    }
 
     if (paymentStatus === "Paid") {
-      booking.paymentStatus = "Paid";
       booking.bookingStatus = "Paid";
-    } else {
-      if (bookingStatus) booking.bookingStatus = bookingStatus;
-      if (paymentStatus) booking.paymentStatus = paymentStatus;
+      booking.paymentStatus = "Paid";
     }
 
     await booking.save();
 
-    const updatedBooking = await Booking.findById(booking._id)
-      .populate("venue", "name location images price")
-      .populate("slot", "startTime endTime")
-      .populate("user", "fullName email phoneNumber");
+    const updatedBooking =
+      await Booking.findById(booking._id)
+        .populate(
+          "venue",
+          "name location images price"
+        )
+        .populate(
+          "slot",
+          "startTime endTime"
+        )
+        .populate(
+          "user",
+          "fullName email phoneNumber"
+        );
 
-    if (updatedBooking.user && updatedBooking.user.email) {
-      if (bookingStatus === "Cancelled" && oldBookingStatus !== "Cancelled") {
-        const cancelSubject = `Booking Cancelled - ${updatedBooking.venue.name}`;
-        const cancelText = `Hello ${updatedBooking.user.fullName},\n\nYour booking at ${updatedBooking.venue.name} for ${updatedBooking.bookingDate} (${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}) has been cancelled.\n\nThe time slot is now available for other users.`;
+    if (
+      updatedBooking &&
+      updatedBooking.user &&
+      updatedBooking.user.email
+    ) {
+            let subject = "";
+      let message = "";
 
-        await sendEmail(
-          updatedBooking.user.email,
-          cancelSubject,
-          cancelText
-        ).catch((err) => console.error("Email send failed:", err.message));
+      switch (booking.bookingStatus) {
+        case "Pending":
+          subject = `Booking Request Pending - ${updatedBooking.venue.name}`;
+          message =
+            `Hello ${updatedBooking.user.fullName},\n\n` +
+            `Your booking request is currently pending.\n\n` +
+            `Venue: ${updatedBooking.venue.name}\n` +
+            `Date: ${updatedBooking.bookingDate}\n` +
+            `Time: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\n\n` +
+            `We will notify you once the booking is confirmed.\n\n` +
+            `Thank you,\nMaidan`;
+          break;
+
+        case "Booked":
+          subject = `Booking Confirmed - ${updatedBooking.venue.name}`;
+          message =
+            `Hello ${updatedBooking.user.fullName},\n\n` +
+            `Congratulations! Your booking has been confirmed.\n\n` +
+            `Venue: ${updatedBooking.venue.name}\n` +
+            `Date: ${updatedBooking.bookingDate}\n` +
+            `Time: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\n\n` +
+            `Please arrive on time.\n\n` +
+            `Thank you,\nMaidan`;
+          break;
+
+        case "Paid":
+          subject = `Payment Received - ${updatedBooking.venue.name}`;
+          message =
+            `Hello ${updatedBooking.user.fullName},\n\n` +
+            `We have successfully received your payment.\n\n` +
+            `Venue: ${updatedBooking.venue.name}\n` +
+            `Date: ${updatedBooking.bookingDate}\n` +
+            `Time: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\n\n` +
+            `Your booking is fully confirmed.\n\n` +
+            `Thank you,\nMaidan`;
+          break;
+
+        case "Completed":
+          subject = `Booking Completed - ${updatedBooking.venue.name}`;
+          message =
+            `Hello ${updatedBooking.user.fullName},\n\n` +
+            `Your booking has been marked as completed.\n\n` +
+            `Thank you for using Maidan.\n\n` +
+            `We hope to see you again soon!`;
+          break;
+
+        case "Cancelled":
+          subject = `Booking Cancelled - ${updatedBooking.venue.name}`;
+          message =
+            `Hello ${updatedBooking.user.fullName},\n\n` +
+            `Your booking has been cancelled.\n\n` +
+            `Venue: ${updatedBooking.venue.name}\n` +
+            `Date: ${updatedBooking.bookingDate}\n` +
+            `Time: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\n\n` +
+            `This time slot is now available for booking.\n\n` +
+            `Please make a new booking if you still wish to play.\n\n` +
+            `Thank you,\nMaidan`;
+          break;
       }
 
       if (
-        (booking.bookingStatus === "Booked" || booking.bookingStatus === "Paid") &&
-        (oldBookingStatus !== booking.bookingStatus || oldPaymentStatus !== booking.paymentStatus)
+        subject &&
+        message &&
+        (oldBookingStatus !== booking.bookingStatus ||
+          oldPaymentStatus !== booking.paymentStatus)
       ) {
-        const confirmSubject = `Your futsal ground has been booked! - ${updatedBooking.venue.name}`;
-        const confirmText = `Hello ${updatedBooking.user.fullName},\n\nGreat news! Your futsal booking at ${updatedBooking.venue.name} is confirmed and marked as ${booking.bookingStatus}.\n\nDate: ${updatedBooking.bookingDate}\nTime: ${updatedBooking.slot.startTime} - ${updatedBooking.slot.endTime}\nPayment Status: ${updatedBooking.paymentStatus}\n\nSee you on the ground!`;
-
-        await sendEmail(
-          updatedBooking.user.email,
-          confirmSubject,
-          confirmText
-        ).catch((err) => console.error("Email send failed:", err.message));
+        try {
+          await sendEmail(
+            updatedBooking.user.email,
+            subject,
+            message
+          );
+        } catch (err) {
+          console.error(
+            "Email send failed:",
+            err.message
+          );
+        }
       }
     }
 
@@ -321,7 +519,8 @@ const updateBooking = async (req, res) => {
   }
 };
 
-// Delete booking
+// Delete Booking
+
 const deleteBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
@@ -337,14 +536,32 @@ const deleteBooking = async (req, res) => {
     }
 
     if (booking.user && booking.user.email) {
-      const deleteSubject = `Booking Cancelled - ${booking.venue ? booking.venue.name : "Venue"}`;
-      const deleteText = `Hello ${booking.user.fullName},\n\nYour booking for ${booking.bookingDate} has been deleted and cancelled.\n\nThe time slot is now available for other users.`;
+      const subject = `Booking Deleted - ${
+        booking.venue?.name || "Venue"
+      }`;
 
-      await sendEmail(
-        booking.user.email,
-        deleteSubject,
-        deleteText
-      ).catch((err) => console.error("Email send failed:", err.message));
+      const message =
+        `Hello ${booking.user.fullName},\n\n` +
+        `Your booking has been deleted by the venue administrator.\n\n` +
+        `Venue: ${booking.venue?.name || "Venue"}\n` +
+        `Date: ${booking.bookingDate}\n` +
+        `Time: ${booking.slot?.startTime} - ${booking.slot?.endTime}\n\n` +
+        `This booking is no longer valid, and the time slot is now available for other users.\n\n` +
+        `If you still wish to play, please make a new booking.\n\n` +
+        `Thank you,\nMaidan`;
+
+      try {
+        await sendEmail(
+          booking.user.email,
+          subject,
+          message
+        );
+      } catch (err) {
+        console.error(
+          "Email send failed:",
+          err.message
+        );
+      }
     }
 
     await booking.deleteOne();
@@ -365,7 +582,7 @@ module.exports = {
   createBooking,
   getAllBookings,
   getBookingById,
+  searchBookings,
   updateBooking,
   deleteBooking,
-  searchBookings,
 };
