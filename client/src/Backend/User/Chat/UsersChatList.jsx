@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaSearch, FaUserCircle, FaCircle } from "react-icons/fa";
+
 import useGetAdminsForSidebar from "../../../hooks/useGetAdminsForSidebar";
+import useConversation from "../../../zustand/useConversation";
 
 const UsersChatList = () => {
   const [search, setSearch] = useState("");
 
   const { loading, admins } = useGetAdminsForSidebar();
+
+  const { setSelectedConversation } = useConversation();
 
   // Search by owner name, email or venue name
   const filteredAdmins = admins.filter((venue) => {
@@ -21,19 +25,17 @@ const UsersChatList = () => {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-110px)] items-center justify-center rounded-2xl bg-white shadow-lg">
-        <span className="loading loading-spinner loading-lg text-green-600"></span>
+      <div className="flex h-full items-center justify-center">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-110px)] overflow-hidden rounded-2xl bg-white shadow-lg">
+    <div className="h-full rounded-2xl bg-white shadow-lg">
       {/* Header */}
-      <div className="bg-green-700 px-5 py-4">
-        <h2 className="text-xl font-bold text-white">
-          Venue Owners
-        </h2>
+      <div className="rounded-t-2xl bg-green-600 p-5 text-white">
+        <h2 className="text-xl font-bold">Venue Owners</h2>
 
         <p className="text-sm text-green-100">
           Contact Venue Owner
@@ -62,6 +64,14 @@ const UsersChatList = () => {
             <NavLink
               key={venue._id}
               to={`/user/chat/${venue.admin._id}`}
+              onClick={() =>
+                setSelectedConversation({
+                  _id: venue.admin._id,
+                  fullName: venue.admin.fullName,
+                  email: venue.admin.email,
+                  venueName: venue.name,
+                })
+              }
               className={({ isActive }) =>
                 `block transition ${
                   isActive
@@ -74,6 +84,7 @@ const UsersChatList = () => {
                 {/* Avatar */}
                 <div className="relative">
                   <FaUserCircle className="text-5xl text-green-600" />
+
                   <FaCircle className="absolute bottom-1 right-1 text-[10px] text-gray-400" />
                 </div>
 
@@ -87,7 +98,7 @@ const UsersChatList = () => {
                     {venue.admin.email}
                   </p>
 
-                  <p className="mt-1 truncate text-xs text-green-600 font-medium">
+                  <p className="mt-1 truncate text-xs font-medium text-green-600">
                     {venue.name} Admin
                   </p>
                 </div>
@@ -97,6 +108,7 @@ const UsersChatList = () => {
         ) : (
           <div className="flex h-full flex-col items-center justify-center text-gray-500">
             <FaUserCircle className="mb-3 text-6xl text-gray-300" />
+
             <p>No venue owners found.</p>
           </div>
         )}

@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaSearch, FaUserCircle, FaCircle } from "react-icons/fa";
+
 import useGetUsersForSidebar from "../../../hooks/useGetUsersForSidebar";
+import useConversation from "../../../zustand/useConversation";
 
 const AdminChatList = () => {
   const [search, setSearch] = useState("");
 
   const { loading, users } = useGetUsersForSidebar();
+
+  const { setSelectedConversation } = useConversation();
 
   const filteredUsers = users.filter((user) => {
     const searchText = search.toLowerCase();
@@ -19,19 +23,17 @@ const AdminChatList = () => {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-110px)] items-center justify-center rounded-2xl bg-white shadow-lg">
-        <span className="loading loading-spinner loading-lg text-green-600"></span>
+      <div className="flex h-full items-center justify-center">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-110px)] overflow-hidden rounded-2xl bg-white shadow-lg">
+    <div className="h-full rounded-2xl bg-white shadow-lg">
       {/* Header */}
-      <div className="bg-green-700 px-5 py-4">
-        <h2 className="text-xl font-bold text-white">
-          Users
-        </h2>
+      <div className="rounded-t-2xl bg-green-600 p-5 text-white">
+        <h2 className="text-xl font-bold">Users</h2>
 
         <p className="text-sm text-green-100">
           Chat with your customers
@@ -60,6 +62,13 @@ const AdminChatList = () => {
             <NavLink
               key={user._id}
               to={`/admin/chat/${user._id}`}
+              onClick={() =>
+                setSelectedConversation({
+                  _id: user._id,
+                  fullName: user.fullName,
+                  email: user.email,
+                })
+              }
               className={({ isActive }) =>
                 `block transition ${
                   isActive

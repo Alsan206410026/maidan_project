@@ -27,6 +27,4 @@ export const SocketContext = createContext();
   );
 };
 
-module.exports = {
-  SocketProvider,
-};
+export default SocketProvider;

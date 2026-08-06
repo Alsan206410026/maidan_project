@@ -1,162 +1,144 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaArrowLeft,
-  FaPaperPlane,
-  FaUserCircle,
-  FaCircle,
-} from "react-icons/fa";
+import axios from "axios";
+import { FaArrowLeft, FaPaperPlane } from "react-icons/fa";
 
-const UsersChatWindow = ({ owner, messages = [], sendMessage }) => {
+import useConversation from "../../../zustand/useConversation";
+
+const UsersChatWindow = ({ owner, messages }) => {
   const navigate = useNavigate();
   const [text, setText] = useState("");
 
-  const handleSend = () => {
+  const { selectedConversation, setMessages } = useConversation();
+
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
+  const handleSend = async () => {
     if (!text.trim()) return;
 
-    sendMessage(text);
-    setText("");
+    try {
+      const res = await axios.post(
+        `http://localhost:5001/api/messages/send/${selectedConversation._id}`,
+        {
+          message: text,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      setMessages([...messages, res.data]);
+
+      setText("");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (!owner) {
     return (
-      <div className="flex h-[calc(100vh-110px)] items-center justify-center rounded-2xl bg-white shadow-lg">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600">
-            Conversation Not Found
-          </h2>
-
-          <p className="mt-2 text-gray-500">
-            This conversation doesn't exist.
-          </p>
-
-          <button
-            onClick={() => navigate("/user/chat")}
-            className="mt-5 rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700"
-          >
-            Back to Chats
-          </button>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        Conversation Not Found
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-110px)] flex-col overflow-hidden rounded-2xl bg-white shadow-lg">
-
+    <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center gap-4 border-b bg-white px-5 py-4">
-
         <button
           onClick={() => navigate("/user/chat")}
-          className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
+          className="lg:hidden"
         >
           <FaArrowLeft />
         </button>
 
-        <div className="relative">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-              owner.ownerName
-            )}&background=16a34a&color=fff`}
-            alt={owner.ownerName}
-            className="h-12 w-12 rounded-full"
-          />
-
-          <span
-            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-              owner.online ? "bg-green-500" : "bg-gray-400"
-            }`}
-          ></span>
-        </div>
+        <img
+          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+            owner.fullName
+          )}`}
+          alt=""
+          className="h-12 w-12 rounded-full"
+        />
 
         <div>
-          <h2 className="text-lg font-semibold">{owner.ownerName}</h2>
-
-          <p className="text-sm text-gray-500">
-            {owner.futsalName}
-          </p>
-
-          <p
-            className={`text-xs ${
-              owner.online ? "text-green-600" : "text-gray-400"
-            }`}
-          >
-            {owner.online ? "Online" : "Offline"}
-          </p>
+          <h2 className="font-semibold">{owner.fullName}</h2>
+          <p className="text-sm text-gray-500">{owner.venueName}</p>
         </div>
-
       </div>
 
-      {/* Chat Messages */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto bg-gray-100 p-5">
+        {messages.map((msg) => {
+          const senderId =
+            typeof msg.senderId === "object"
+              ? msg.senderId?._id
+              : msg.senderId;
 
-        {messages.length === 0 ? (
-          <div className="mt-20 text-center text-gray-500">
-            No messages yet.
-          </div>
-        ) : (
-          messages.map((msg) => (
+          const isMine = senderId === currentUser?._id;
+
+          console.log({
+            senderId,
+            currentUser: currentUser?._id,
+            isMine,
+            msg,
+          });
+
+          return (
             <div
-              key={msg.id}
+              key={msg._id}
               className={`mb-4 flex ${
-                msg.mine ? "justify-end" : "justify-start"
+                isMine ? "justify-end" : "justify-start"
               }`}
             >
               <div
-                className={`max-w-xs rounded-2xl px-4 py-3 shadow md:max-w-md ${
-                  msg.mine
-                    ? "bg-green-600 text-white"
-                    : "bg-white text-gray-800"
+                className={`max-w-xs rounded-2xl px-4 py-3 shadow ${
+                  isMine
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-black"
                 }`}
               >
-                <p>{msg.text}</p>
+                <p>{msg.message}</p>
 
                 <p
                   className={`mt-2 text-right text-xs ${
-                    msg.mine
-                      ? "text-green-100"
-                      : "text-gray-400"
+                    isMine
+                      ? "text-blue-100"
+                      : "text-gray-500"
                   }`}
                 >
-                  {msg.time}
+                  {new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
               </div>
             </div>
-          ))
-        )}
-
+          );
+        })}
       </div>
 
       {/* Input */}
       <div className="border-t bg-white p-4">
-
-        <div className="flex items-center gap-3">
-
+        <div className="flex gap-3">
           <input
-            type="text"
-            placeholder="Type your message..."
+            className="flex-1 rounded border px-4 py-3"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSend();
-              }
+              if (e.key === "Enter") handleSend();
             }}
-            className="flex-1 rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-600"
           />
 
           <button
             onClick={handleSend}
-            className="rounded-xl bg-green-600 p-4 text-white hover:bg-green-700"
+            className="rounded bg-blue-600 p-4 text-white"
           >
             <FaPaperPlane />
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 };
