@@ -10,6 +10,9 @@ dotenv.config();
 const connectDB = require("./config/db");
 const sessionMiddleware = require("./middleware/sessionmiddleware");
 const updatetournamentstatus = require("./jobs/updatetournamentstatus.job.js");
+const pendingremove = require("./jobs/pendingremove.js");
+
+
 
 connectDB();
 
@@ -26,6 +29,13 @@ const startTournamentCron = () => {
     console.log("Tournament status & auto-delete cron job initialized.");
 };
 
+// Cron Job for Pending Booking Cleanup run every 3 minutes
+cron.schedule("*/3 * * * *", async () => {
+    console.log("[CRON] Running scheduled pending booking cleanup...");
+    await pendingremove();
+});
+
+
 // 2. Execute cron initialization & run an immediate check on startup
 
 updatetournamentstatus(); // Catches up immediately on server restart
@@ -35,6 +45,7 @@ startTournamentCron();   // Starts background schedule
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -59,6 +70,9 @@ app.use("/api/tournament", require("./routes/tournamentRoutes"));
 app.use("/api/booking", require("./routes/bookingRoutes"));
 app.use("/api/timeslot", require("./routes/timeSlotRoutes"));
 app.use("/api/users", require("./routes/GetAdminForChat.Routes.js"));
+app.use("/api/admin/chat", require("./routes/AdminChat.routes"));
+app.use("/api/esewa", require("./routes/esewaRoutes"));
+app.use("/api/messages", require("./routes/message.routes.js"));
 
 const PORT = process.env.PORT || 5001;
 

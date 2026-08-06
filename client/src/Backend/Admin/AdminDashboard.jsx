@@ -3,7 +3,6 @@ import axios from "axios";
 import { FaCalendarCheck, FaClock, FaMoneyBillWave, FaHourglassHalf, FaEye, FaTrash, FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-
 function AdminDashboard({ setActiveTab }) {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
@@ -22,9 +21,29 @@ function AdminDashboard({ setActiveTab }) {
       setBookings(bookingData);
 
       const today = new Date().toISOString().split("T")[0];
-      const todayBookings = bookingData.filter((booking) => (booking.bookingDate || booking.date)?.substring(0, 10) === today);
+      const todayBookings = bookingData.filter((booking) => (
+        booking.bookingDate || booking.date)?.substring(0, 10) === today
+      );
+
       const pendingBookings = bookingData.filter((booking) => booking.bookingStatus?.toLowerCase() === "pending" || booking.status?.toLowerCase() === "pending");
-      const revenue = bookingData.reduce((sum, booking) => sum + Number(booking.totalAmount || booking.amount || booking.price || 0), 0);
+
+      const revenue = bookingData
+        .filter(
+          (booking) =>
+            (booking.transaction?.status || "").toUpperCase() === "COMPLETED" ||
+            (booking.paymentStatus || "").toLowerCase() === "paid"
+        )
+        .reduce(
+          (sum, booking) =>
+            sum +
+            Number(
+              booking.totalAmount ||
+              booking.amount ||
+              booking.price ||
+              0
+            ),
+          0
+        );
 
       setStats({ totalBookings: bookingData.length, todayBookings: todayBookings.length, revenue, pendingBookings: pendingBookings.length });
     } catch (error) {

@@ -60,13 +60,19 @@ import UserSidebar from "./Backend/User/UserSidebar";
 import UserDashboard from "./Backend/User/UserDashboard";
 import BookVenue from "./Backend/User/BookVenue/BookVenue";
 import Booking from "./Backend/User/Booking/Booking";
-import EsewaPayment from "./Backend/User/Booking/EsewaPayment";
 import UsersChatLayout from "./Backend/User/Chat/UsersChatLayout";
 import UsersChat from "./Backend/User/Chat/UsersChat";
 import BookingsLayout from "./Backend/User/mybookings/BookingsLayout";
 import ActiveBookings from "./Backend/User/mybookings/ActiveBookings";
 import PendingPage from "./Backend/User/mybookings/PendingPage";
 import HistoryPage from "./Backend/User/mybookings/HistoryPage";
+
+
+// ================= esewa=================
+import PaymentFailed from "./components/PaymentFailed";
+
+
+
 
 function App() {
   return (
@@ -149,14 +155,13 @@ function App() {
           <Route path="/user-dashboard" element={<UserDashboard />} />
           <Route path="/user/book-venue" element={<BookVenue />} />
           <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/user/esewa-payment" element={<EsewaPayment />} />
-
           <Route path="/user/my-bookings" element={<BookingsLayout />}>
             <Route index element={<Navigate to="paid" replace />} />
             <Route path="paid" element={<ActiveBookings />} />
             <Route path="pending" element={<PendingPage />} />
             <Route path="history" element={<HistoryPage />} />
           </Route>
+          <Route path="payment/failed" element={<PaymentFailed />} />
 
           <Route path="/user/chat" element={<UsersChatLayout />}>
             <Route path=":ownerId" element={<UsersChat />} />
@@ -167,6 +172,11 @@ function App() {
           </Route>
         </Route>
       </Route>
+
+      {/*=============Payment Routes================*/}
+
+      
+
     </Routes>
   );
 }
