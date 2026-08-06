@@ -83,7 +83,11 @@ const searchTimeSlots = async (req, res) => {
 const createTimeSlot = async (req, res) => {
   try {
     const { venueId, startTime, endTime } = req.body;
-    const newSlot = await TimeSlot.create({ venue: venueId, startTime, endTime, status: "Active" });
+    const newSlot = await TimeSlot.create({
+      venue: venueId,
+      startTime, endTime,
+      status: "Active"
+    });
     return res.status(201).json({ success: true, data: newSlot });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -93,7 +97,11 @@ const createTimeSlot = async (req, res) => {
 // Update a time slot
 const updateTimeSlot = async (req, res) => {
   try {
-    const slot = await TimeSlot.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const slot = await TimeSlot.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+     { returnDocument: "after" }
+    );
     return res.status(200).json({ success: true, data: slot });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

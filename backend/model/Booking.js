@@ -36,15 +36,16 @@ const BookingSchema = new mongoose.Schema(
       required: [true, "Payment method is required"],
     },
 
-    paymentStatus: {
-      type: String,
-      enum: ["Pending", "Paid", "Failed"],
-      default: "Pending",
+    transaction: {
+     type : mongoose.Schema.Types.ObjectId,
+     ref : "Transaction",
+     required : [true, "Payment transaction reference is required"]
+
     },
 
     bookingStatus: {
       type: String,
-      enum: ["Booked", "Paid", "Cancelled", "Pending", "Completed"],
+      enum: ["Booked",  "Cancelled", "Pending", "Completed"],
       default: "Pending",
     },
   },

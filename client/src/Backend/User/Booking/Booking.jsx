@@ -13,12 +13,46 @@ function Booking() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const { register, handleSubmit } = useForm();
   const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
+
+  const { register, handleSubmit, setValue } = useForm({
+    defaultValues: {
+      bookingDate: today,
+      paymentMethod: "Cash",
+    },
+  });
 
   useEffect(() => {
-    fetchVenueDetailsAndSlots(today);
-  }, [id]);
+    fetchVenueDetailsAndSlots(selectedDate);
+  }, [id, selectedDate]);
+
+  const isFutureSlot = (startTime, dateStr) => {
+    if (dateStr > today) return true;
+    if (dateStr < today) return false;
+
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    const match = startTime.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    if (!match) return true;
+
+    let [, hours, minutes, modifier] = match;
+    let slotHours = parseInt(hours, 10);
+    const slotMinutes = parseInt(minutes, 10);
+
+    if (modifier) {
+      modifier = modifier.toUpperCase();
+      if (modifier === "PM" && slotHours < 12) slotHours += 12;
+      if (modifier === "AM" && slotHours === 12) slotHours = 0;
+    }
+
+    if (slotHours > currentHours) return true;
+    if (slotHours === currentHours && slotMinutes > currentMinutes) return true;
+
+    return false;
+  };
 
   const fetchVenueDetailsAndSlots = async (date) => {
     try {
@@ -31,7 +65,11 @@ function Booking() {
       ]);
 
       setVenue(venueRes.data?.data || venueRes.data);
-      setSlots(slotRes.data?.data || slotRes.data || []);
+      
+      const rawSlots = slotRes.data?.data || slotRes.data || [];
+      const filteredSlots = rawSlots.filter((slot) => isFutureSlot(slot.startTime, date));
+
+      setSlots(filteredSlots);
       setSelectedSlot(null);
     } catch (err) {
       console.error("Failed to load booking details:", err);
@@ -40,17 +78,23 @@ function Booking() {
     }
   };
 
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setSelectedDate(newDate);
+    setValue("bookingDate", newDate);
+    fetchVenueDetailsAndSlots(newDate);
+  };
+
   const onSubmit = async (data) => {
     if (!selectedSlot) {
       alert("Please choose an available time slot!");
       return;
     }
 
-  
     const payload = {
-      venue: id,
-      slot: selectedSlot._id,
-      bookingDate: data.bookingDate || today,
+      venueId: id,
+      slotId: selectedSlot._id,
+      bookingDate: selectedDate,
       paymentMethod: data.paymentMethod || "Cash",
     };
 
@@ -59,20 +103,19 @@ function Booking() {
         await axios.post("http://localhost:5001/api/booking", payload, {
           withCredentials: true,
         });
-        alert("Booking submitted successfully!");
-        navigate("/user/my-bookings/pending");
+        alert("Booking submitted successfully! Transaction status is pending.");
+        navigate("/user/my-bookings");
       } catch (err) {
         alert(err.response?.data?.message || "Booking failed");
       }
     } else {
-      // For online payment redirect (eSewa), pass venue ID to calculate server-side signature
       navigate("/user/esewa-payment", {
         state: { bookingPayload: payload, venue },
       });
     }
   };
 
-  if (loading) {
+  if (loading && !venue) {
     return <div className="py-12 text-center text-gray-500">Loading booking form...</div>;
   }
 
@@ -86,36 +129,32 @@ function Booking() {
         <FaArrowLeft /> Back to Venues
       </button>
 
-      {/* Selected Venue Overview Header (Information fetched from Backend for display) */}
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-800">{venue?.name}</h1>
         <p className="mt-1 text-sm text-gray-500">{venue?.location}</p>
-        <p className="mt-2 text-xl font-bold text-green-600">Rs. {venue?.price} / hour</p>
+        <p className="mt-2 text-xl font-bold text-green-600">Rs. {venue?.price || venue?.pricePerHour} / hour</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-        {/* Date Selector */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
             <FaCalendarAlt className="text-green-600" /> Select Date
           </label>
           <input
             type="date"
-            defaultValue={today}
             min={today}
             {...register("bookingDate")}
-            onChange={(e) => fetchVenueDetailsAndSlots(e.target.value)}
+            onChange={handleDateChange}
             className="w-full rounded-lg border p-3 outline-none focus:border-green-600"
           />
         </div>
 
-        {/* Slot Options */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
             <FaClock className="text-green-600" /> Choose Available Slot
           </label>
           {slots.length === 0 ? (
-            <p className="text-sm text-red-500">No slots available for this date.</p>
+            <p className="text-sm text-red-500">No upcoming slots available for this date.</p>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {slots.map((slot) => (
@@ -136,7 +175,6 @@ function Booking() {
           )}
         </div>
 
-        {/* Payment Radio Options */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
             <FaMoneyBillWave className="text-green-600" /> Payment Type
@@ -146,7 +184,6 @@ function Booking() {
               <input
                 type="radio"
                 value="Cash"
-                defaultChecked
                 {...register("paymentMethod")}
                 className="mr-2"
               />
@@ -166,7 +203,8 @@ function Booking() {
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleSubmit(onSubmit)}
           className="w-full rounded-lg bg-green-600 py-3 font-bold text-white transition hover:bg-green-700"
         >
           Confirm Booking

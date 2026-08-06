@@ -68,6 +68,12 @@ import ActiveBookings from "./Backend/User/mybookings/ActiveBookings";
 import PendingPage from "./Backend/User/mybookings/PendingPage";
 import HistoryPage from "./Backend/User/mybookings/HistoryPage";
 
+// ================= Payment =================
+// import PaymentComponent from "./components/PaymentForm";
+// import Success from "./components/Success";
+// import Failure from "./components/Failure";
+
+
 function App() {
   return (
     <Routes>
@@ -167,6 +173,13 @@ function App() {
           </Route>
         </Route>
       </Route>
+
+      {/*=============Payment Routes================*/}
+
+
+     
+
+
     </Routes>
   );
 }

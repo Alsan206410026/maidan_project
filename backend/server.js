@@ -59,6 +59,7 @@ app.use("/api/tournament", require("./routes/tournamentRoutes"));
 app.use("/api/booking", require("./routes/bookingRoutes"));
 app.use("/api/timeslot", require("./routes/timeSlotRoutes"));
 app.use("/api/users", require("./routes/GetAdminForChat.Routes.js"));
+// app.use("/api", require("./routes/PaymentRoutes.js"));
 
 const PORT = process.env.PORT || 5001;
 

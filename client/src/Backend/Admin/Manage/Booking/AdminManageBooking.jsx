@@ -15,261 +15,165 @@ function AdminManageBooking() {
 
   const fetchBookings = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5001/api/booking",
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get("http://localhost:5001/api/booking", {
+        withCredentials: true,
+      });
 
       setBookings(response.data.data || response.data || []);
     } catch (error) {
-      console.error(
-        "Failed to fetch bookings:",
-        error.response?.data || error.message
-      );
+      console.error("Failed to fetch bookings:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = async (venueId, bookingId) => {
-    const confirmCancel = window.confirm(
-      "Are you sure you want to cancel this booking? This will free up the time slot."
-    );
-
+    const confirmCancel = window.confirm("Are you sure you want to cancel this booking?");
     if (!confirmCancel) return;
 
     try {
       await axios.put(
         `http://localhost:5001/api/booking/admin/${venueId}/${bookingId}`,
-        {
-          bookingStatus: "Cancelled",
-        },
-        {
-          withCredentials: true,
-        }
+        { bookingStatus: "Cancelled" },
+        { withCredentials: true }
       );
 
       await fetchBookings();
-
       alert("Booking cancelled successfully.");
     } catch (error) {
-      console.error(
-        "Failed to cancel booking:",
-        error.response?.data || error.message
-      );
-
-      alert(
-        error.response?.data?.message ||
-          "Failed to cancel booking."
-      );
+      console.error("Failed to cancel booking:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to cancel booking.");
     }
   };
 
   const handleDelete = async (venueId, bookingId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this booking record?"
-    );
-
+    const confirmDelete = window.confirm("Are you sure you want to delete this booking record?");
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(
-        `http://localhost:5001/api/booking/admin/${venueId}/${bookingId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await axios.delete(`http://localhost:5001/api/booking/admin/${venueId}/${bookingId}`, {
+        withCredentials: true,
+      });
 
       await fetchBookings();
-
       alert("Booking deleted successfully.");
     } catch (error) {
-      console.error(
-        "Failed to delete booking:",
-        error.response?.data || error.message
-      );
-
-      alert(
-        error.response?.data?.message ||
-          "Failed to delete booking."
-      );
+      console.error("Failed to delete booking:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to delete booking.");
     }
   };
 
   return (
     <div className="p-6">
-      <h3 className="text-2xl font-bold mb-6 text-slate-800">
-        Manage Bookings
-      </h3>
+      <h3 className="mb-6 text-2xl font-bold text-slate-800">Manage Bookings</h3>
 
-      <div className="overflow-x-auto bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+      <div className="overflow-x-auto rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b-2 border-slate-200 text-slate-600 text-sm font-semibold">
-              <th className="py-3 px-4">S.N.</th>
-              <th className="py-3 px-4">User Name</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Phone</th>
-              <th className="py-3 px-4">Date & Time</th>
-              <th className="py-3 px-4">Payment Status</th>
-              <th className="py-3 px-4">Payment Type</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-center">Actions</th>
+            <tr className="border-b-2 border-slate-200 text-sm font-semibold text-slate-600">
+              <th className="px-4 py-3">S.N.</th>
+              <th className="px-4 py-3">User Name</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Phone</th>
+              <th className="px-4 py-3">Date & Time</th>
+              <th className="px-4 py-3">Payment Type</th>
+              <th className="px-4 py-3">Transaction ID</th>
+              <th className="px-4 py-3">Txn Status</th>
+              <th className="px-4 py-3">Booking Status</th>
+              <th className="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody className="text-sm">
             {loading ? (
               <tr>
-                <td
-                  colSpan="9"
-                  className="py-6 text-center text-slate-500"
-                >
+                <td colSpan="10" className="py-6 text-center text-slate-500">
                   Loading bookings...
                 </td>
               </tr>
             ) : bookings.length > 0 ? (
               bookings.map((booking, index) => {
-                const statusVal =
-                  booking.bookingStatus ||
-                  booking.status ||
-                  "Booked";
+                const bookingStatusVal = booking.bookingStatus || "Pending";
+                const bookingStatusLower = bookingStatusVal.toLowerCase();
 
-                const status =
-                  statusVal.toLowerCase();
+                const paymentType = booking.paymentMethod || "Cash";
+                
+                // Secure lookup matching Mongoose Schema population
+                const txnId = booking.transaction?._id || booking.transaction || "-";
+                const txnStatusVal = booking.transaction?.status || "PENDING";
+                const txnStatusLower = txnStatusVal.toLowerCase();
 
-                const paymentStatusVal =
-                  booking.paymentStatus || "Pending";
-
-                const paymentStatus =
-                  paymentStatusVal.toLowerCase();
-
-                const paymentType =
-                  booking.paymentMethod || "Cash";
-
-                const dateVal =
-                  booking.bookingDate ||
-                  booking.date;
-
-                const userName =
-                  booking.user?.name ||
-                  booking.user?.fullName ||
-                  "N/A";
-
-                const userEmail =
-                  booking.user?.email ||
-                  "N/A";
-
-                // ✅ Fixed phone number
-                const userPhone =
-                  booking.user?.phone ||
-                  booking.user?.phoneNumber ||
-                  "N/A";
-
-                const venueId =
-                  booking.venue?._id ||
-                  booking.venue;
+                const dateVal = booking.bookingDate;
+                const userName = booking.user?.fullName || booking.user?.name || "N/A";
+                const userEmail = booking.user?.email || "N/A";
+                const userPhone = booking.user?.phoneNumber || booking.user?.phone || "N/A";
+                const venueId = booking.venue?._id || booking.venue;
 
                 return (
                   <tr
                     key={booking._id}
                     className={`border-b border-slate-100 transition-colors ${
-                      status === "cancelled"
-                        ? "bg-red-100 hover:bg-red-200"
+                      bookingStatusLower === "cancelled"
+                        ? "bg-red-50 hover:bg-red-100"
                         : "hover:bg-slate-50"
                     }`}
                   >
-                    <td className="py-4 px-4 font-semibold">
-                      {index + 1}
-                    </td>
-
-                    <td className="py-4 px-4 font-medium">
-                      {userName}
-                    </td>
-
-                    <td className="py-4 px-4">
-                      {userEmail}
-                    </td>
-
-                    <td className="py-4 px-4">
-                      {userPhone}
-                    </td>
-
-                    <td className="py-4 px-4">
-                      {dateVal
-                        ? new Date(
-                            dateVal
-                          ).toLocaleDateString()
-                        : "-"}{" "}
+                    <td className="px-4 py-4 font-semibold">{index + 1}</td>
+                    <td className="px-4 py-4 font-medium">{userName}</td>
+                    <td className="px-4 py-4">{userEmail}</td>
+                    <td className="px-4 py-4">{userPhone}</td>
+                    <td className="px-4 py-4">
+                      {dateVal ? new Date(dateVal).toLocaleDateString() : "-"}{" "}
                       (
                       {booking.slot?.startTime
                         ? `${booking.slot.startTime} - ${booking.slot.endTime}`
-                        : booking.time || "-"}
+                        : "-"}
                       )
                     </td>
-                                        <td className="py-4 px-4">
+                    <td className="px-4 py-4 font-medium">{paymentType}</td>
+                    <td className="px-4 py-4 font-mono text-xs text-slate-600">
+                      {typeof txnId === "string" ? txnId : txnId.toString()}
+                    </td>
+                    <td className="px-4 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold inline-block ${
-                          paymentStatus === "paid"
+                        className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
+                          txnStatusLower === "completed" || txnStatusLower === "success"
                             ? "bg-green-600 text-white"
-                            : paymentStatus === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : paymentStatus === "failed"
-                            ? "bg-red-600 text-white"
-                            : "bg-slate-200 text-slate-700"
+                            : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
-                        {paymentStatusVal}
+                        {txnStatusVal}
                       </span>
                     </td>
-
-                    <td className="py-4 px-4 font-medium">
-                      {paymentType}
-                    </td>
-
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold inline-block ${
-                          status === "paid"
-                            ? "bg-green-600 text-white"
-                            : status === "booked"
-                            ? "bg-yellow-400 text-black"
-                            : status === "pending"
-                            ? "bg-white border border-slate-300 text-slate-700"
-                            : status === "cancelled"
-                            ? "bg-red-600 text-white"
-                            : "bg-slate-200 text-slate-700"
+                        className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
+                          bookingStatusLower === "booked"
+                            ? "bg-blue-600 text-white"
+                            : bookingStatusLower === "completed"
+                            ? "bg-green-700 text-white"
+                            : bookingStatusLower === "pending"
+                            ? "border border-slate-300 bg-white text-slate-700"
+                            : "bg-red-600 text-white"
                         }`}
                       >
-                        {statusVal}
+                        {bookingStatusVal}
                       </span>
                     </td>
-
-                    <td className="py-4 px-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() =>
-                            navigate(
-                              `/admin/manage/edit/${venueId}/${booking._id}`
-                            )
-                          }
-                          className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                          onClick={() => navigate(`/admin/manage/edit/${venueId}/${booking._id}`)}
+                          className="rounded-lg bg-blue-50 p-2 text-blue-600 transition-colors hover:bg-blue-100"
                           title="Edit Booking"
                         >
                           <FaEdit />
                         </button>
 
-                        {status !== "cancelled" && (
+                        {bookingStatusLower !== "cancelled" && (
                           <button
-                            onClick={() =>
-                              handleCancel(
-                                venueId,
-                                booking._id
-                              )
-                            }
-                            className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors"
+                            onClick={() => handleCancel(venueId, booking._id)}
+                            className="rounded-lg bg-amber-50 p-2 text-amber-600 transition-colors hover:bg-amber-100"
                             title="Cancel Booking"
                           >
                             <FaTimesCircle />
@@ -277,13 +181,8 @@ function AdminManageBooking() {
                         )}
 
                         <button
-                          onClick={() =>
-                            handleDelete(
-                              venueId,
-                              booking._id
-                            )
-                          }
-                          className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                          onClick={() => handleDelete(venueId, booking._id)}
+                          className="rounded-lg bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100"
                           title="Delete Booking"
                         >
                           <FaTrash />
@@ -295,10 +194,7 @@ function AdminManageBooking() {
               })
             ) : (
               <tr>
-                <td
-                  colSpan="9"
-                  className="py-8 text-center text-slate-500"
-                >
+                <td colSpan="10" className="py-8 text-center text-slate-500">
                   No bookings found.
                 </td>
               </tr>
