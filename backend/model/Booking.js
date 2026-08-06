@@ -44,14 +44,8 @@ const BookingSchema = new mongoose.Schema(
 
     bookingStatus: {
       type: String,
-      enum: ["Booked", "Paid", "Cancelled", "Pending"],
+      enum: ["Booked", "Paid", "Cancelled", "Pending", "Completed"],
       default: "Pending",
-    },
-
-    cancelledBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
     },
   },
   { timestamps: true }

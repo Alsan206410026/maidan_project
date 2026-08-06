@@ -10,9 +10,14 @@ function BookedPage() {
     axios
       .get("http://localhost:5001/api/booking", { withCredentials: true })
       .then((res) => {
-        const paidData = (res.data || []).filter(
-          (b) => b.bookingStatus === "Paid" || b.paymentStatus === "Paid"
+        const data = res.data.data || [];
+
+        const paidData = data.filter(
+          (b) =>
+            b.bookingStatus === "Paid" ||
+            b.paymentStatus === "Paid"
         );
+
         setBookings(paidData);
       })
       .catch((err) => console.error(err))

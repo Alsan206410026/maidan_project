@@ -1,14 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { createBooking, getAllBookings, getBookingById, updateBooking, deleteBooking, searchBookings } = require('../controllers/bookingController');
-const { protect } = require('../middleware/authmiddleware');
-const {venueAdminMiddleware} = require('../middleware/venueAdminMiddleware.js');
 
-// Booking routes
-router.route("/").get(protect, getAllBookings).post(protect, createBooking);
+const { createBooking, getAllBookings, getBookingById, updateBooking, deleteBooking, searchBookings } = require("../controllers/bookingController");
+const { protect } = require("../middleware/authmiddleware");
+const { venueAdminMiddleware } = require("../middleware/venueAdminMiddleware");
 
-router.route("/search").get(protect, searchBookings);
+// User routes
+router.get("/", protect, getAllBookings);
+router.post("/", protect, createBooking);
+router.get("/search", protect, searchBookings);
+router.get("/:id", protect, getBookingById);
 
-router.route("/:id").get(protect, getBookingById).put(protect,venueAdminMiddleware, updateBooking).delete(protect,venueAdminMiddleware, deleteBooking);
+// Admin routes
+router.put("/admin/:venueId/:id", protect, venueAdminMiddleware, updateBooking);
+router.delete("/admin/:venueId/:id", protect, venueAdminMiddleware, deleteBooking);
 
 module.exports = router;

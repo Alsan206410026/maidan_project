@@ -13,7 +13,13 @@ function HistoryPage() {
       .then((res) => {
         // Simple fallback if response is wrapped or direct array
         const data = res.data.data || res.data || [];
-        setHistoryBookings(data);
+        const history = data.filter(
+          (b) =>
+            b.bookingStatus === "Completed" ||
+            b.bookingStatus === "Cancelled"
+        );
+
+        setHistoryBookings(history);
         setLoading(false);
       })
       .catch((err) => {

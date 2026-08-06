@@ -18,7 +18,6 @@ const TimeSlotSchema = new mongoose.Schema(
       required: [true, "End time is required"],
     },
 
-    // Master switch controlled by Venue Admin/Owner (e.g., ground maintenance)
     status: {
       type: String,
       enum: ["Active", "Inactive"],

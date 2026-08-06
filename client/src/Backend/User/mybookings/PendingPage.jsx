@@ -9,11 +9,15 @@ function PendingPage() {
     axios
       .get("http://localhost:5001/api/booking", { withCredentials: true })
       .then((res) => {
-        const pendingData = (res.data || []).filter(
+        const data = res.data.data || [];
+
+        const pendingData = data.filter(
           (b) =>
-            (b.bookingStatus === "Booked" || b.bookingStatus === "Pending") &&
+            (b.bookingStatus === "Booked" ||
+              b.bookingStatus === "Pending") &&
             b.paymentStatus !== "Paid"
         );
+
         setBookings(pendingData);
       })
       .catch((err) => console.error(err))

@@ -1,30 +1,18 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-    getTimeSlots,
-    getTimeSlotById,
-    searchTimeSlots,
-    createTimeSlot,
-    updateTimeSlot,
-    deleteTimeSlot,
-} = require("../controllers/timeSlotController");
-
-const { venueAdminMiddleware } = require("../middleware/venueAdminMiddleware.js");
+const { getTimeSlots, getTimeSlotById, searchTimeSlots, createTimeSlot, updateTimeSlot, deleteTimeSlot } = require("../controllers/timeSlotController");
 const { protect } = require("../middleware/authmiddleware");
-const { superAdminOrAdmin } = require("../middleware/superAdminOrAdminMiddleware");
+const { venueAdminMiddleware } = require("../middleware/venueAdminMiddleware");
 
-router
-    .route("/")
-    .get(getTimeSlots)
-    .post(protect ,venueAdminMiddleware, createTimeSlot);
+// User / Public routes
+router.get("/", getTimeSlots);
+router.get("/search", searchTimeSlots);
+router.get("/:id", getTimeSlotById);
 
-router.route("/search").get(searchTimeSlots);
-
-router
-    .route("/:id")
-    .get(getTimeSlotById)
-    .put(protect,venueAdminMiddleware, updateTimeSlot)
-    .delete(protect, venueAdminMiddleware, deleteTimeSlot);
+// Admin routes
+router.post("/admin/:venueId", protect, venueAdminMiddleware, createTimeSlot);
+router.put("/admin/:venueId/:id", protect, venueAdminMiddleware, updateTimeSlot);
+router.delete("/admin/:venueId/:id", protect, venueAdminMiddleware, deleteTimeSlot);
 
 module.exports = router;

@@ -4,13 +4,13 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
 function AdminEditTimeSlot() {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset } = useForm();
   const [startTime, setStartTime] = useState("06:00 AM");
   const [endTime, setEndTime] = useState("07:00 AM");
-  const navigate = useNavigate();
-  const { id } = useParams();
 
-  // Generate 24-hour time options in AM/PM format incremented by 30 mins
+  const navigate = useNavigate();
+  const { venueId, id } = useParams();
+
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -26,117 +26,72 @@ function AdminEditTimeSlot() {
 
   const timeOptions = generateTimeOptions();
 
-  useEffect(() => {
-    fetchTimeSlotById();
-  }, [id]);
+  useEffect(() => { fetchTimeSlotById(); }, [id]);
 
   const fetchTimeSlotById = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/timeslot/${id}`, {
-        withCredentials: true,
-      });
-      const s = response.data.data || response.data;
-      
-      // If backend already has individual startTime / endTime, use them; otherwise split the 'time' string
-      if (s.startTime && s.endTime) {
-        setStartTime(s.startTime);
-        setEndTime(s.endTime);
-      } else if (s.time && s.time.includes("-")) {
-        const parts = s.time.split("-").map((t) => t.trim());
-        if (parts[0]) setStartTime(parts[0]);
-        if (parts[1]) setEndTime(parts[1]);
-      }
+      const response = await axios.get(`http://localhost:5001/api/timeslot/${id}`, { withCredentials: true });
+      const slot = response.data.data || response.data;
 
-      reset({
-        status: s.status || "Available",
-      });
+      setStartTime(slot.startTime || "06:00 AM");
+      setEndTime(slot.endTime || "07:00 AM");
+      reset({ status: slot.status || "Active" });
     } catch (error) {
-      console.error("Failed to fetch time slot details from database:", error);
+      console.error("Failed to fetch time slot:", error.response?.data || error.message);
+      alert("Failed to load time slot details.");
     }
   };
 
   const onSubmit = async (data) => {
-    const formattedTime = `${startTime} - ${endTime}`;
-    const payload = {
-      ...data,
-      time: formattedTime,
-      startTime: startTime,
-      endTime: endTime,
-    };
-
     try {
-      await axios.put(`http://localhost:5001/api/timeslot/${id}`, payload, {
-        withCredentials: true,
-      });
-      alert("Time slot updated successfully!");
+      await axios.put(
+        `http://localhost:5001/api/timeslot/admin/${venueId}/${id}`,
+        { startTime, endTime, status: data.status },
+        { withCredentials: true }
+      );
+
+      alert("Time slot updated successfully.");
       navigate(-1);
     } catch (error) {
-      console.error("Failed to update time slot:", error);
-      alert("Failed to update time slot.");
+      console.error("Failed to update time slot:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to update time slot.");
     }
   };
 
   return (
     <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-slate-100">
-      <h3 className="mb-5 text-xl font-bold text-slate-800">Edit Time Slot</h3>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        {/* Start Time Dropdown */}
+      <h3 className="mb-6 text-2xl font-bold text-slate-800">Edit Time Slot</h3>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label className="block mb-1.5 text-sm font-medium text-slate-600">Start Time</label>
-          <select
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="w-full p-2.5 rounded-md border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {timeOptions.map((time, idx) => (
-              <option key={idx} value={time}>{time}</option>
+          <label className="block mb-2 text-sm font-medium text-slate-700">Start Time</label>
+          <select value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2.5">
+            {timeOptions.map((time, index) => (
+              <option key={index} value={time}>{time}</option>
             ))}
           </select>
         </div>
 
-        {/* End Time Dropdown */}
         <div>
-          <label className="block mb-1.5 text-sm font-medium text-slate-600">End Time</label>
-          <select
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="w-full p-2.5 rounded-md border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {timeOptions.map((time, idx) => (
-              <option key={idx} value={time}>{time}</option>
+          <label className="block mb-2 text-sm font-medium text-slate-700">End Time</label>
+          <select value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2.5">
+            {timeOptions.map((time, index) => (
+              <option key={index} value={time}>{time}</option>
             ))}
           </select>
         </div>
 
-        {/* Status Dropdown */}
         <div>
-          <label className="block mb-1.5 text-sm font-medium text-slate-600">Status</label>
-          <select 
-            {...register("status")} 
-            className="w-full p-2.5 rounded-md border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Available">Available</option>
-            <option value="Booked">Booked</option>
+          <label className="block mb-2 text-sm font-medium text-slate-700">Status</label>
+          <select {...register("status")} className="w-full rounded-lg border border-slate-300 px-3 py-2.5">
+            <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 mt-4">
-          <button 
-            type="button" 
-            onClick={() => navigate(-1)} 
-            className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 border-none rounded-md cursor-pointer font-medium transition"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white border-none rounded-md cursor-pointer font-medium transition"
-          >
-            Update Time Slot
-          </button>
+        <div className="flex justify-end gap-3 pt-4">
+          <button type="button" onClick={() => navigate(-1)} className="rounded-lg bg-slate-200 px-5 py-2.5 font-medium text-slate-700">Cancel</button>
+          <button type="submit" className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white">Update Time Slot</button>
         </div>
       </form>
     </div>
