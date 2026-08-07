@@ -43,9 +43,6 @@ import SuperAdminManageTournament from "./Backend/SuperAdmin/tournaments/SuperAd
 import SuperAdminAddTournament from "./Backend/SuperAdmin/tournaments/SuperAdminAddTournament";
 import SuperAdminEditTournament from "./Backend/SuperAdmin/tournaments/SuperAdminEditTournament";
 
-import ChatLayout from "./Backend/SuperAdmin/chat/ChatLayout";
-import SuperAdminChat from "./Backend/SuperAdmin/chat/SuperAdminChat";
-
 // ================= ADMIN =================
 import AdminSidebar from "./Backend/Admin/AdminSidebar";
 import AdminDashboard from "./Backend/Admin/AdminDashboard";
@@ -84,11 +81,8 @@ import PaymentFailed from "./components/PaymentFailed";
 function App() {
   return (
     <Routes>
-
       {/* ================= PUBLIC ROUTES ================= */}
-
       <Route path="/" element={<Home />} />
-
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-otp" element={<RegisterAuthentication />} />
@@ -98,220 +92,83 @@ function App() {
 
       <Route path="/venues" element={<Venue />} />
       <Route path="/venues/:id" element={<VenueDetails />} />
-
       <Route path="/tournaments" element={<Tournament />} />
       <Route path="/tournaments/:id" element={<TournamentDetail />} />
 
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
-
-      {/* Payment Callback */}
       <Route path="/payment/failed" element={<PaymentFailed />} />
 
       {/* ================= SUPER ADMIN ================= */}
-
       <Route element={<ProtectedRoute role="super_admin" />}>
-
         <Route element={<SuperAdminSidebar />}>
+          <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 
-          <Route
-            path="/super-admin-dashboard"
-            element={<SuperAdminDashboard />}
-          />
-
-          <Route
-            path="/super-admin/users"
-            element={<SuperAdminUserLayout />}
-          >
+          <Route path="/super-admin/users" element={<SuperAdminUserLayout />}>
             <Route index element={<SuperAdminManageUser />} />
             <Route path="admins" element={<SuperAdminManageAdmins />} />
             <Route path="super-admins" element={<SuperAdminManageSuperAdmin />} />
             <Route path="edit/:id" element={<SuperAdminEditUser />} />
           </Route>
 
-          <Route
-            path="/super-admin/venues"
-            element={<SuperAdminManageVenue />}
-          />
+          <Route path="/super-admin/venues" element={<SuperAdminManageVenue />} />
+          <Route path="/super-admin/venues/add" element={<SuperAdminAddVenue />} />
+          <Route path="/super-admin/venues/edit/:id" element={<SuperAdminEditVenue />} />
 
-          <Route
-            path="/super-admin/venues/add"
-            element={<SuperAdminAddVenue />}
-          />
+          <Route path="/super-admin/venue-category" element={<SuperAdminManageCategory />} />
+          <Route path="/super-admin/venue-category/add" element={<SuperAdminAddCategory />} />
+          <Route path="/super-admin/venue-category/edit/:id" element={<SuperAdminEditCategory />} />
 
-          <Route
-            path="/super-admin/venues/edit/:id"
-            element={<SuperAdminEditVenue />}
-          />
-
-          <Route
-            path="/super-admin/venue-category"
-            element={<SuperAdminManageCategory />}
-          />
-
-          <Route
-            path="/super-admin/venue-category/add"
-            element={<SuperAdminAddCategory />}
-          />
-
-          <Route
-            path="/super-admin/venue-category/edit/:id"
-            element={<SuperAdminEditCategory />}
-          />
-
-          <Route
-            path="/super-admin/tournaments"
-            element={<SuperAdminManageTournament />}
-          />
-
-          <Route
-            path="/super-admin/tournaments/add"
-            element={<SuperAdminAddTournament />}
-          />
-
-          <Route
-            path="/super-admin/tournaments/edit/:id"
-            element={<SuperAdminEditTournament />}
-          />
-
-          <Route
-            path="/super-admin/chat"
-            element={<ChatLayout />}
-          >
-            <Route path=":userId" element={<SuperAdminChat />} />
-          </Route>
-
+          <Route path="/super-admin/tournaments" element={<SuperAdminManageTournament />} />
+          <Route path="/super-admin/tournaments/add" element={<SuperAdminAddTournament />} />
+          <Route path="/super-admin/tournaments/edit/:id" element={<SuperAdminEditTournament />} />
         </Route>
-
       </Route>
 
       {/* ================= ADMIN ================= */}
-
       <Route element={<ProtectedRoute role="admin" />}>
-
         <Route element={<AdminSidebar />}>
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/venue" element={<AdminVenue />} />
+          <Route path="/admin/venue/edit/:id" element={<AdminEditVenue />} />
 
-          <Route
-            path="/admin-dashboard"
-            element={<AdminDashboard />}
-          />
-
-          <Route
-            path="/admin/venue"
-            element={<AdminVenue />}
-          />
-
-          <Route
-            path="/admin/venue/edit/:id"
-            element={<AdminEditVenue />}
-          />
-
-          <Route
-            path="/admin/manage"
-            element={<AdminLayout />}
-          >
-            <Route
-              index
-              element={<Navigate to="bookings" replace />}
-            />
-
-            <Route
-              path="bookings"
-              element={<AdminManageBooking />}
-            />
-
-            <Route
-              path="edit/:venueId/:id"
-              element={<AdminEditBooking />}
-            />
-
-            <Route
-              path="timeslots"
-              element={<AdminManageTimeSlot />}
-            />
-
-            <Route
-              path="timeslots/edit/:venueId/:id"
-              element={<AdminEditTimeSlot />}
-            />
+          <Route path="/admin/manage" element={<AdminLayout />}>
+            <Route index element={<Navigate to="bookings" replace />} />
+            <Route path="bookings" element={<AdminManageBooking />} />
+            <Route path="edit/:venueId/:id" element={<AdminEditBooking />} />
+            <Route path="timeslots" element={<AdminManageTimeSlot />} />
+            <Route path="timeslots/edit/:venueId/:id" element={<AdminEditTimeSlot />} />
           </Route>
 
-          {/* Fixed Chat Routing */}
-          <Route
-            path="/admin/chat"
-            element={<AdminChatLayout />}
-          >
+          <Route path="/admin/chat" element={<AdminChatLayout />}>
             <Route index element={<AdminChatList />} />
             <Route path=":userId" element={<AdminChat />} />
           </Route>
-
         </Route>
-
       </Route>
 
       {/* ================= USER ================= */}
-
       <Route element={<ProtectedRoute role="user" />}>
-
         <Route element={<UserSidebar />}>
+          <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/user/book-venue" element={<BookVenue />} />
+          <Route path="/booking/:id" element={<Booking />} />
 
-          <Route
-            path="/user-dashboard"
-            element={<UserDashboard />}
-          />
-
-          <Route
-            path="/user/book-venue"
-            element={<BookVenue />}
-          />
-
-          <Route
-            path="/booking/:id"
-            element={<Booking />}
-          />
-
-          <Route
-            path="/user/my-bookings"
-            element={<BookingsLayout />}
-          >
-            <Route
-              index
-              element={<Navigate to="paid" replace />}
-            />
-
-            <Route
-              path="paid"
-              element={<ActiveBookings />}
-            />
-
-            <Route
-              path="pending"
-              element={<PendingPage />}
-            />
-
-            <Route
-              path="history"
-              element={<HistoryPage />}
-            />
+          <Route path="/user/my-bookings" element={<BookingsLayout />}>
+            <Route index element={<Navigate to="paid" replace />} />
+            <Route path="paid" element={<ActiveBookings />} />
+            <Route path="pending" element={<PendingPage />} />
+            <Route path="history" element={<HistoryPage />} />
           </Route>
 
-          <Route
-            path="/user/chat"
-            element={<UsersChatLayout />}
-          >
-            <Route
-              path=":ownerId"
-              element={<UsersChat />}
-            />
+          <Route path="/user/chat" element={<UsersChatLayout />}>
+            <Route path=":ownerId" element={<UsersChat />} />
           </Route>
-
         </Route>
-
       </Route>
 
-      {/* 404 */}
+      {/* 404 Catch-All */}
       <Route path="*" element={<Navigate to="/" replace />} />
-
     </Routes>
   );
 }

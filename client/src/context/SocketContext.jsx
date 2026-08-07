@@ -1,27 +1,50 @@
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-export const SocketContext = createContext();
+export const SocketContext = createContext(null);
 
- const SocketProvider = ({ children }) => {
+export const useSocketContext = () => {
+  return useContext(SocketContext);
+};
+
+export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+
+  // Retrieve auth user from localStorage (adjust key if different)
+  const authUser = JSON.parse(localStorage.getItem("user") || "null");
 
   useEffect(() => {
-    // Create socket connection
-    const newSocket = io("http://localhost:5001", {
-      withCredentials: true,
-    });
+    if (authUser && (authUser._id || authUser.id)) {
+      const userId = authUser._id || authUser.id;
 
-    setSocket(newSocket);
+      const newSocket = io("http://localhost:5001", {
+        withCredentials: true,
+        query: {
+          userId: userId,
+        },
+      });
 
-    // Cleanup when provider unmounts
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
+      setSocket(newSocket);
+
+      // Listen for online users list broadcast from backend
+      newSocket.on("getOnlineUsers", (users) => {
+        setOnlineUsers(users);
+      });
+
+      return () => {
+        newSocket.off("getOnlineUsers");
+        newSocket.disconnect();
+        setSocket(null);
+      };
+    } else if (socket) {
+      socket.disconnect();
+      setSocket(null);
+    }
+  }, [authUser?._id || authUser?.id]);
 
   return (
-    <SocketContext.Provider value={{ socket }}>
+    <SocketContext.Provider value={{ socket, onlineUsers }}>
       {children}
     </SocketContext.Provider>
   );

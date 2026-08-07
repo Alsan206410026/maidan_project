@@ -1,43 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaArrowLeft, FaPaperPlane } from "react-icons/fa";
 
 import useConversation from "../../../zustand/useConversation";
 
-const UsersChatWindow = ({ owner, messages }) => {
+const UsersChatWindow = ({ owner, messages = [] }) => {
   const navigate = useNavigate();
   const [text, setText] = useState("");
+  const messagesEndRef = useRef(null);
 
   const { selectedConversation, setMessages } = useConversation();
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async (e) => {
+    if (e) e.preventDefault();
+    if (!text.trim() || !selectedConversation?._id) return;
 
     try {
       const res = await axios.post(
         `http://localhost:5001/api/messages/send/${selectedConversation._id}`,
-        {
-          message: text,
-        },
-        {
-          withCredentials: true,
-        }
+        { message: text },
+        { withCredentials: true }
       );
 
-      setMessages([...messages, res.data]);
-
+      const newMsg = res.data.data || res.data;
+      setMessages([...messages, newMsg]);
       setText("");
     } catch (error) {
-      console.error(error);
+      console.error("Error sending message:", error);
     }
   };
 
   if (!owner) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center text-gray-500">
         Conversation Not Found
       </div>
     );
@@ -49,45 +54,37 @@ const UsersChatWindow = ({ owner, messages }) => {
       <div className="flex items-center gap-4 border-b bg-white px-5 py-4">
         <button
           onClick={() => navigate("/user/chat")}
-          className="lg:hidden"
+          className="lg:hidden text-gray-600 hover:text-black"
         >
           <FaArrowLeft />
         </button>
 
         <img
           src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-            owner.fullName
+            owner?.fullName || "User"
           )}`}
-          alt=""
+          alt={owner?.fullName || "Avatar"}
           className="h-12 w-12 rounded-full"
         />
 
         <div>
-          <h2 className="font-semibold">{owner.fullName}</h2>
-          <p className="text-sm text-gray-500">{owner.venueName}</p>
+          <h2 className="font-semibold text-gray-800">{owner?.fullName}</h2>
+          <p className="text-sm text-gray-500">{owner?.venueName}</p>
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages Feed */}
       <div className="flex-1 overflow-y-auto bg-gray-100 p-5">
         {messages.map((msg) => {
-          const senderId =
-            typeof msg.senderId === "object"
-              ? msg.senderId?._id
-              : msg.senderId;
+          const rawSenderId =
+            typeof msg.senderId === "object" ? msg.senderId?._id : msg.senderId;
+          const currentUserId = currentUser?._id || currentUser?.id;
 
-          const isMine = senderId === currentUser?._id;
-
-          console.log({
-            senderId,
-            currentUser: currentUser?._id,
-            isMine,
-            msg,
-          });
+          const isMine = String(rawSenderId) === String(currentUserId);
 
           return (
             <div
-              key={msg._id}
+              key={msg._id || Math.random()}
               className={`mb-4 flex ${
                 isMine ? "justify-end" : "justify-start"
               }`}
@@ -95,49 +92,47 @@ const UsersChatWindow = ({ owner, messages }) => {
               <div
                 className={`max-w-xs rounded-2xl px-4 py-3 shadow ${
                   isMine
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-black"
+                    ? "bg-blue-600 text-white"   // MY MESSAGE: Right, Blue
+                    : "bg-white text-black"     // OTHER MESSAGE: Left, White
                 }`}
               >
-                <p>{msg.message}</p>
-
+                <p className="break-words">{msg.message}</p>
                 <p
-                  className={`mt-2 text-right text-xs ${
-                    isMine
-                      ? "text-blue-100"
-                      : "text-gray-500"
+                  className={`mt-2 text-right text-[10px] ${
+                    isMine ? "text-blue-100" : "text-gray-400"
                   }`}
                 >
-                  {new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {msg.createdAt
+                    ? new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
                 </p>
               </div>
             </div>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <div className="border-t bg-white p-4">
-        <div className="flex gap-3">
+        <form onSubmit={handleSend} className="flex gap-3">
           <input
-            className="flex-1 rounded border px-4 py-3"
+            type="text"
+            className="flex-1 rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSend();
-            }}
           />
-
           <button
-            onClick={handleSend}
-            className="rounded bg-blue-600 p-4 text-white"
+            type="submit"
+            className="rounded-xl bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700"
           >
             <FaPaperPlane />
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

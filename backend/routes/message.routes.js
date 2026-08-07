@@ -11,7 +11,7 @@ const { protect } = require("../middleware/authmiddleware");
 // Get all messages between logged-in user and another user
 router.get("/:id", protect, getMessages);
 
-// Send a message to another user
-router.post("/:id", protect, sendMessage);
+// Send a message to another user (Added /send/ to match frontend axios requests)
+router.post("/send/:id", protect, sendMessage);
 
 module.exports = router;

@@ -48,11 +48,6 @@ function SuperAdminSidebar() {
       icon: <FaTrophy />,
     },
     {
-      name: "Chat",
-      path: "/super-admin/chat",
-      icon: <FaComments />,
-    },
-    {
       name: "Logout",
       path: "/logout",
       icon: <FaSignOutAlt />,
