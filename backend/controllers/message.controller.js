@@ -1,6 +1,9 @@
 const Conversation = require("../model/Conversation");
 const Message = require("../model/Message");
 
+const { getIO } = require("../config/socket");
+const { getUserSocket } = require("../socket/userSocketMap");
+
 const sendMessage = async (req, res) => {
   try {
     const { message } = req.body;
@@ -16,7 +19,7 @@ const sendMessage = async (req, res) => {
     if (!conversation) {
       conversation = new Conversation({
         participants: [senderId, receiverId],
-        messages: [], // Initialize messages as an empty array
+        messages: [],
       });
     }
 
@@ -24,31 +27,33 @@ const sendMessage = async (req, res) => {
     const newMessage = new Message({
       senderId,
       receiverId,
-      message
+      message,
     });
 
-
     // Add message to conversation
-    if (newMessage) {
-      conversation.messages.push(newMessage._id);
-    }
+    conversation.messages.push(newMessage._id);
 
-
-    //socket.io logic
-
-
-
-
-    //Save in database long way
-    // await conversation.save();
-    // await newMessage.save();
-
-
- //save both conversation and message in parallel
+    // Save conversation and message together
     await Promise.all([
       conversation.save(),
-      newMessage.save()
+      newMessage.save(),
     ]);
+
+  
+    // Socket.IO
+  
+
+    const receiverSocketId = getUserSocket(receiverId);
+
+    if (receiverSocketId) {
+      const io = getIO();
+
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+
+      console.log(
+        `Realtime message sent to user ${receiverId}`
+      );
+    }
 
     return res.status(201).json({
       message: "Message sent successfully",
@@ -65,11 +70,11 @@ const sendMessage = async (req, res) => {
 };
 
 const getMessages = async (req, res) => {
-  try{
-    const {id: userToChatId} = req.params;
+  try {
+    const { id: userToChatId } = req.params;
     const senderId = req.user._id;
 
-    // Find the conversation between the two users
+    // Find conversation
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, userToChatId] },
     }).populate("messages");
@@ -80,21 +85,18 @@ const getMessages = async (req, res) => {
       });
     }
 
-    const messages = conversation.messages
+    return res.status(200).json(conversation.messages);
 
-    res.status(200).json(messages);
-
-
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error retrieving messages:", error);
+
     return res.status(500).json({
       message: "An error occurred while retrieving messages.",
     });
   }
-}
+};
 
 module.exports = {
   sendMessage,
-  getMessages
+  getMessages,
 };

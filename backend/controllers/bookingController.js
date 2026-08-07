@@ -89,8 +89,8 @@ const createBooking = async (req, res) => {
     }
 
     const isCashPayment = paymentMethod.toLowerCase() === "cash";
-    const bookingStatus = isCashPayment ? "Pending" : "Pending";
-    const paymentStatus = isCashPayment ? "Pending" : "Pending";
+    const bookingStatus = isCashPayment ? "Booked" : "Pending";
+    const paymentStatus = isCashPayment ? "Paid" : "Pending";
 
     const booking = await Booking.create({
       user: userId,
