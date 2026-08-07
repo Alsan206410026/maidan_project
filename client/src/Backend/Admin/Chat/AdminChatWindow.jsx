@@ -18,7 +18,7 @@ const AdminChatWindow = ({ user, messages }) => {
 
     try {
       const res = await axios.post(
-        `http://localhost:5001/api/messages/send/${selectedConversation._id}`,
+        `http://localhost:5001/api/messages/${selectedConversation._id}`,
         {
           message: text,
         },
@@ -27,8 +27,7 @@ const AdminChatWindow = ({ user, messages }) => {
         }
       );
 
-      setMessages([...messages, res.data]);
-
+      setMessages([...messages, res.data.data]);
       setText("");
     } catch (error) {
       console.error("Error sending message:", error);
@@ -39,7 +38,7 @@ const AdminChatWindow = ({ user, messages }) => {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-2xl font-semibold">
             Conversation Not Found
           </h2>
 
@@ -59,10 +58,9 @@ const AdminChatWindow = ({ user, messages }) => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-white">
-
+    <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 border-b px-5 py-4">
+      <div className="flex items-center gap-4 border-b bg-white px-5 py-4">
         <button
           onClick={() => navigate("/admin/chat")}
           className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
@@ -99,24 +97,16 @@ const AdminChatWindow = ({ user, messages }) => {
           messages.map((msg) => {
             const senderId =
               typeof msg.senderId === "object"
-                ? msg.senderId?._id
+                ? msg.senderId._id
                 : msg.senderId;
 
             const isMine = senderId === currentUser?._id;
-
-            console.log({
-              senderId,
-              currentUser: currentUser?._id,
-              isMine,
-            });
 
             return (
               <div
                 key={msg._id}
                 className={`mb-4 flex ${
-                  isMine
-                    ? "justify-end"
-                    : "justify-start"
+                  isMine ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
@@ -156,9 +146,7 @@ const AdminChatWindow = ({ user, messages }) => {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSend();
-              }
+              if (e.key === "Enter") handleSend();
             }}
             className="flex-1 rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-green-600"
           />

@@ -1,12 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const { sendMessage, getMessages } = require("../controllers/message.controller.js");
-const { protect } = require("../middleware/authmiddleware.js");
 
+const {
+  sendMessage,
+  getMessages,
+} = require("../controllers/message.controller");
 
-router.get("/getMessages/:id",protect, getMessages);
-router.post("/send/:id",protect, sendMessage);
+const { protect } = require("../middleware/authmiddleware");
 
+// Get all messages between logged-in user and another user
+router.get("/:id", protect, getMessages);
 
+// Send a message to another user
+router.post("/:id", protect, sendMessage);
 
 module.exports = router;
