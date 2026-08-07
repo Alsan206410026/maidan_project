@@ -131,9 +131,9 @@ function Booking() {
     }
 
     try {
-      // ===========================
-      // STEP 1: Create Booking
-      // ===========================
+   
+      //  Create Booking
+     
 
       const bookingPayload = {
         venueId: id,
@@ -152,9 +152,9 @@ function Booking() {
 
       const booking = bookingResponse.data.data;
 
-      // ===========================
+      
       // CASH PAYMENT
-      // ===========================
+      
 
       if (data.paymentMethod === "Cash") {
         alert("Booking created successfully.");
@@ -164,9 +164,8 @@ function Booking() {
         return;
       }
 
-      // ===========================
       // eSewa PAYMENT
-      // ===========================
+  
 
       const paymentResponse = await axios.post(
         "http://localhost:5001/api/esewa/initiate",
@@ -180,9 +179,9 @@ function Booking() {
 
       const paymentData = paymentResponse.data.payment;
 
-      // ===========================
+   
       // Create HTML Form
-      // ===========================
+      
 
       const form = document.createElement("form");
 
